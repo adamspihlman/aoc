@@ -4,16 +4,14 @@ fn parse_reports(input: &str) -> Vec<Vec<u64>> {
     input
         .lines()
         .map(|line| {
-            let parts = line.split_whitespace();
-            let report: Vec<u64> = parts
+            line.split_whitespace()
                 .map(|element| element.parse::<u64>().unwrap())
-                .collect();
-            report
+                .collect()
         })
         .collect()
 }
 
-fn is_report_safe(report: &Vec<u64>) -> bool {
+fn is_report_safe(report: &[u64]) -> bool {
     #[derive(PartialEq)]
     enum Direction {
         Increasing,
