@@ -1,29 +1,16 @@
 advent_of_code::solution!(1);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut left_list: Vec<u64> = Vec::new();
-    let mut right_list: Vec<u64> = Vec::new();
+    let (mut left_list, mut right_list): (Vec<u64>, Vec<u64>) = input
+        .lines()
+        .map(|line| {
+            let mut parts = line.split_whitespace();
+            let left = parts.next().unwrap().parse::<u64>().unwrap();
+            let right = parts.next().unwrap().parse::<u64>().unwrap();
+            (left, right)
+        })
+        .unzip();
 
-    for line in input.lines() {
-        let mut my_numbers = line.split_whitespace();
-
-        left_list.push(
-            my_numbers
-                .next()
-                .expect("Expected number in line")
-                .trim()
-                .parse()
-                .expect("Expected to parse u64"),
-        );
-        right_list.push(
-            my_numbers
-                .next()
-                .expect("Expected number in line")
-                .trim()
-                .parse()
-                .expect("Expected to parse u64"),
-        );
-    }
     left_list.sort();
     right_list.sort();
 
