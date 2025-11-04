@@ -1,5 +1,13 @@
 advent_of_code::solution!(2);
 
+#[derive(PartialEq)]
+enum ReportSafety {
+    Safe,                   // nothing to do, safe
+    DiffTooLarge,           // nothing to do, impossible to make safe
+    DiffTooSmall(usize),    // check 1 possibility, index where 0 diff found
+    DirectionChange(usize), // check n - 2, n - 1, and n removed
+}
+
 fn parse_reports(input: &str) -> Vec<Vec<u64>> {
     input
         .lines()
@@ -11,7 +19,7 @@ fn parse_reports(input: &str) -> Vec<Vec<u64>> {
         .collect()
 }
 
-fn is_report_safe(report: &[u64]) -> bool {
+fn get_report_safety(report: &[u64]) -> ReportSafety {
     #[derive(PartialEq)]
     enum Direction {
         Increasing,
@@ -19,7 +27,7 @@ fn is_report_safe(report: &[u64]) -> bool {
     }
 
     if report.len() <= 1 {
-        return true;
+        return ReportSafety::Safe;
     }
 
     let mut prev = report[0];
@@ -38,32 +46,44 @@ fn is_report_safe(report: &[u64]) -> bool {
         }
 
         let diff = current.abs_diff(prev);
-        if diff < 1 || diff > 3 {
-            return false;
-        }
-        if (direction == Direction::Increasing && *current < prev)
+        if diff < 1 {
+            return ReportSafety::DiffTooSmall(index);
+        } else if diff > 3 {
+            return ReportSafety::DiffTooLarge;
+        } else if (direction == Direction::Increasing && *current < prev)
             || (direction == Direction::Decreasing && *current > prev)
         {
-            return false;
+            return ReportSafety::DirectionChange(index);
         }
         prev = *current;
     }
-    true
+    ReportSafety::Safe
+}
+
+fn is_report_safe(report: &[u64]) -> bool {
+    get_report_safety(report) == ReportSafety::Safe
 }
 
 fn is_dampened_report_safe(report: &[u64]) -> bool {
-    if is_report_safe(report) {
-        return true;
-    }
-
-    for index in 0..report.len() {
-        let mut my_copy = report.to_vec();
-        my_copy.remove(index);
-        if is_report_safe(&my_copy) {
-            return true;
+    match get_report_safety(report) {
+        ReportSafety::Safe => true,
+        ReportSafety::DiffTooLarge => false,
+        ReportSafety::DiffTooSmall(index) => {
+            let mut my_copy = report.to_vec();
+            my_copy.remove(index);
+            is_report_safe(&my_copy)
+        }
+        ReportSafety::DirectionChange(index) => {
+            for permutation in 0..=index {
+                let mut my_copy = report.to_vec();
+                my_copy.remove(permutation);
+                if is_report_safe(&my_copy) {
+                    return true;
+                }
+            }
+            false
         }
     }
-    false
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
