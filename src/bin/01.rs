@@ -14,12 +14,13 @@ pub fn part_one(input: &str) -> Option<u64> {
     left_list.sort();
     right_list.sort();
 
-    let mut my_result = 0;
+    let result = left_list
+        .iter()
+        .zip(&right_list)
+        .map(|(l, r)| l.abs_diff(*r))
+        .sum();
 
-    for index in 0..left_list.len() {
-        my_result += left_list[index].abs_diff(right_list[index]);
-    }
-    Some(my_result)
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
