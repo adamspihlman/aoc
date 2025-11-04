@@ -53,10 +53,7 @@ fn is_report_safe(report: &[u64]) -> bool {
 
 pub fn part_one(input: &str) -> Option<u64> {
     let reports = parse_reports(input);
-    let result = reports
-        .iter()
-        .map(|report| if is_report_safe(report) { 1 } else { 0 })
-        .sum();
+    let result = reports.iter().filter(|r| is_report_safe(r)).count() as u64;
     Some(result)
 }
 
