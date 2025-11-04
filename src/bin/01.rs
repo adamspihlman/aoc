@@ -1,13 +1,6 @@
 advent_of_code::solution!(1);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    // split by line
-    // per line, push first number to left list, second number to right list
-    // after all lines are processed, sort two lists
-    // iterate across both lists in unison and sum up difference
-    // return difference
-    //
-    //
     let mut left_list: Vec<u64> = Vec::new();
     let mut right_list: Vec<u64> = Vec::new();
 
