@@ -1,7 +1,21 @@
 advent_of_code::solution!(3);
 
+use regex::Regex;
+
+fn get_regex() -> Regex {
+    Regex::new(r"mul\((\d+),(\d+)\)").unwrap()
+}
+
 pub fn part_one(input: &str) -> Option<u64> {
-    None
+    let re = get_regex();
+
+    let result = re
+        .captures_iter(input)
+        .map(|c| c.extract())
+        .map(|(_, [left, right])| left.parse::<u64>().unwrap() * right.parse::<u64>().unwrap())
+        .sum();
+
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
@@ -15,7 +29,7 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(161));
     }
 
     #[test]
