@@ -1,7 +1,45 @@
 advent_of_code::solution!(1);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    None
+    // split by line
+    // per line, push first number to left list, second number to right list
+    // after all lines are processed, sort two lists
+    // iterate across both lists in unison and sum up difference
+    // return difference
+    //
+    //
+    let mut left_list: Vec<u64> = Vec::new();
+    let mut right_list: Vec<u64> = Vec::new();
+
+    for line in input.lines() {
+        let mut my_numbers = line.split_whitespace();
+
+        left_list.push(
+            my_numbers
+                .next()
+                .expect("Expected number in line")
+                .trim()
+                .parse()
+                .expect("Expected to parse u64"),
+        );
+        right_list.push(
+            my_numbers
+                .next()
+                .expect("Expected number in line")
+                .trim()
+                .parse()
+                .expect("Expected to parse u64"),
+        );
+    }
+    left_list.sort();
+    right_list.sort();
+
+    let mut my_result = 0;
+
+    for index in 0..left_list.len() {
+        my_result += left_list[index].abs_diff(right_list[index]);
+    }
+    Some(my_result)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
@@ -15,7 +53,7 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(11));
     }
 
     #[test]
