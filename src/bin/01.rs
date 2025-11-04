@@ -34,7 +34,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 
     let mut freq_map: HashMap<u64, u64> = HashMap::new();
 
-    for item in right_list {
+    for &item in &right_list {
         freq_map
             .entry(item)
             .and_modify(|count| *count += 1)
