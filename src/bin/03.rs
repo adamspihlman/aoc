@@ -55,12 +55,10 @@ pub fn part_two(input: &str) -> Option<u64> {
         let do_lower_bound = lower_bound(&do_calls, mul_start);
         let dont_lower_bound = lower_bound(&dont_calls, mul_start);
 
-        let mul_enabled = match dont_lower_bound {
-            None => true,
-            Some(disable) => match do_lower_bound {
-                None => false,
-                Some(enable) => enable > disable,
-            },
+        let mul_enabled = match (dont_lower_bound, do_lower_bound) {
+            (None, _) => true,
+            (Some(_), None) => false,
+            (Some(left_idx), Some(right_idx)) => right_idx > left_idx,
         };
 
         if mul_enabled {
