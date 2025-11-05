@@ -28,9 +28,13 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file_part(
+        let result_1 = part_two(&advent_of_code::template::read_file_part(
             "examples", DAY, 2,
         ));
-        assert_eq!(result, Some(9));
+        assert_eq!(result_1, Some(9));
+        let result_2 = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 3,
+        ));
+        assert_eq!(result_2, Some(0));
     }
 }
