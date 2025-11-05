@@ -29,6 +29,30 @@ impl Rules {
         true
     }
 
+    pub fn make_valid(&self, update: &[u64]) -> Vec<u64> {
+        let mut copy = update.to_vec();
+        self.attempt_fix(&mut copy);
+
+        while !self.is_valid(&copy) {
+            self.attempt_fix(&mut copy);
+        }
+        copy
+    }
+
+    fn attempt_fix(&self, update: &mut [u64]) {
+        let mut seen: HashMap<u64, usize> = HashMap::new();
+
+        for (index, &cur) in update.iter().enumerate() {
+            for &prev in seen.keys() {
+                if self.is_before(cur, prev) {
+                    update.swap(index, seen.get(&prev).copied().unwrap());
+                    return;
+                }
+            }
+            seen.insert(cur, index);
+        }
+    }
+
     fn is_before(&self, before: u64, after: u64) -> bool {
         self.rules.contains_key(&before) && self.rules.get(&before).unwrap().contains(&after)
     }

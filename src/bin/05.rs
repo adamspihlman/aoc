@@ -48,8 +48,15 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(sum)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let rules = advent_of_code::order_rules::build_rules(parse_input_rules(input));
+    let mut updates = parse_input_updates(input);
+    updates.retain(|u| !rules.is_valid(u));
+
+    let fixed: Vec<Vec<u64>> = updates.iter().map(|u| rules.make_valid(u)).collect();
+    let sum = fixed.into_iter().map(|u| u[u.len() / 2]).sum();
+
+    Some(sum)
 }
 
 #[cfg(test)]
@@ -65,6 +72,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(123));
     }
 }
