@@ -55,7 +55,15 @@ pub fn part_two(input: &str) -> Option<u64> {
         let do_lower_bound = lower_bound(&do_calls, mul_start);
         let dont_lower_bound = lower_bound(&dont_calls, mul_start);
 
-        if do_lower_bound > dont_lower_bound {
+        let mul_enabled = match dont_lower_bound {
+            None => true,
+            Some(disable) => match do_lower_bound {
+                None => false,
+                Some(enable) => enable > disable,
+            },
+        };
+
+        if mul_enabled {
             let (_, [left, right]) = mul_iter.extract();
             result += left.parse::<u64>().unwrap() * right.parse::<u64>().unwrap();
         }
