@@ -14,18 +14,6 @@ fn get_dont_regex() -> Regex {
     Regex::new(r"don\'t\(\)").unwrap()
 }
 
-pub fn part_one(input: &str) -> Option<u64> {
-    let re = get_mul_regex();
-
-    let result = re
-        .captures_iter(input)
-        .map(|c| c.extract())
-        .map(|(_, [left, right])| left.parse::<u64>().unwrap() * right.parse::<u64>().unwrap())
-        .sum();
-
-    Some(result)
-}
-
 fn lower_bound(arr: &[usize], value: usize) -> Option<usize> {
     match arr.binary_search(&value) {
         Ok(_) => panic!("Matches should not have identical start indices"),
@@ -37,6 +25,18 @@ fn lower_bound(arr: &[usize], value: usize) -> Option<usize> {
             }
         }
     }
+}
+
+pub fn part_one(input: &str) -> Option<u64> {
+    let re = get_mul_regex();
+
+    let result = re
+        .captures_iter(input)
+        .map(|c| c.extract())
+        .map(|(_, [left, right])| left.parse::<u64>().unwrap() * right.parse::<u64>().unwrap())
+        .sum();
+
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
