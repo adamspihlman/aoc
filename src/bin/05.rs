@@ -1,6 +1,6 @@
 advent_of_code::solution!(5);
 
-fn parse_input(input: &str) -> Vec<(u64, u64)> {
+fn parse_input_rules(input: &str) -> Vec<(u64, u64)> {
     let mut result: Vec<(u64, u64)> = Vec::new();
 
     for line in input.lines() {
@@ -17,11 +17,39 @@ fn parse_input(input: &str) -> Vec<(u64, u64)> {
     result
 }
 
+fn parse_input_updates(input: &str) -> Vec<Vec<u64>> {
+    let mut result: Vec<Vec<u64>> = Vec::new();
+    let mut is_past_rules = false;
+
+    for line in input.lines() {
+        if line.trim().is_empty() {
+            is_past_rules = true;
+            continue;
+        } else if !is_past_rules {
+            continue;
+        }
+
+        let update: Vec<u64> = line
+            .split(',')
+            .enumerate()
+            .map(|(_, d)| d.parse::<u64>().unwrap())
+            .collect();
+        result.push(update);
+    }
+
+    result
+}
+
 pub fn part_one(input: &str) -> Option<u64> {
-    let rules = advent_of_code::order_rules::build_rules(parse_input(input));
-    println!("{:?}", rules);
-    // rules.print();
-    None
+    let rules = advent_of_code::order_rules::build_rules(parse_input_rules(input));
+    let updates = parse_input_updates(input);
+    let sum = updates
+        .into_iter()
+        .filter(|u| rules.is_valid(u))
+        .map(|u| u[u.len() / 2])
+        .sum();
+
+    Some(sum)
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
