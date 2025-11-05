@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
@@ -11,6 +12,7 @@ pub fn build_rules(input: Vec<(u64, u64)>) -> Rules {
     for (before, after) in input {
         rules.entry(before).or_default().insert(after);
     }
+
     Rules { rules }
 }
 
@@ -30,27 +32,17 @@ impl Rules {
     }
 
     pub fn make_valid(&self, update: &[u64]) -> Vec<u64> {
-        let mut copy = update.to_vec();
-        self.attempt_fix(&mut copy);
-
-        while !self.is_valid(&copy) {
-            self.attempt_fix(&mut copy);
-        }
-        copy
-    }
-
-    fn attempt_fix(&self, update: &mut [u64]) {
-        let mut seen: HashMap<u64, usize> = HashMap::new();
-
-        for (index, &cur) in update.iter().enumerate() {
-            for &prev in seen.keys() {
-                if self.is_before(cur, prev) {
-                    update.swap(index, seen.get(&prev).copied().unwrap());
-                    return;
-                }
+        let mut result = update.to_vec();
+        result.sort_by(|a, b| {
+            if self.is_before(*a, *b) {
+                Ordering::Less
+            } else if self.is_before(*b, *a) {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
             }
-            seen.insert(cur, index);
-        }
+        });
+        result
     }
 
     fn is_before(&self, before: u64, after: u64) -> bool {
