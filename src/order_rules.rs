@@ -9,7 +9,7 @@ pub fn build_rules(input: Vec<(u64, u64)>) -> Rules {
     let mut rules: HashMap<u64, HashSet<u64>> = HashMap::new();
 
     for (before, after) in input {
-        rules.entry(before).or_insert(HashSet::new()).insert(after);
+        rules.entry(before).or_default().insert(after);
     }
     Rules { rules }
 }
@@ -18,13 +18,13 @@ impl Rules {
     pub fn is_valid(&self, update: &[u64]) -> bool {
         let mut seen: HashSet<u64> = HashSet::new();
 
-        for &item in update {
+        for &cur in update {
             for &prev in &seen {
-                if self.is_before(item, prev) {
+                if self.is_before(cur, prev) {
                     return false;
                 }
             }
-            seen.insert(item);
+            seen.insert(cur);
         }
         true
     }

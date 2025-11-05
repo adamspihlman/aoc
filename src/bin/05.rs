@@ -29,11 +29,7 @@ fn parse_input_updates(input: &str) -> Vec<Vec<u64>> {
             continue;
         }
 
-        let update: Vec<u64> = line
-            .split(',')
-            .enumerate()
-            .map(|(_, d)| d.parse::<u64>().unwrap())
-            .collect();
+        let update: Vec<u64> = line.split(',').map(|d| d.parse::<u64>().unwrap()).collect();
         result.push(update);
     }
 
