@@ -11,7 +11,7 @@ pub struct Pathfinder<'a> {
     start_direction: Direction,
 }
 
-#[derive(Hash, Eq, PartialEq, Debug, Clone)]
+#[derive(Hash, Eq, PartialEq, Debug, Copy, Clone)]
 enum Direction {
     Up,
     Down,
@@ -19,7 +19,7 @@ enum Direction {
     Right,
 }
 
-#[derive(Hash, Eq, PartialEq, Debug, Clone)]
+#[derive(Hash, Eq, PartialEq, Debug, Copy, Clone)]
 struct Location {
     row: usize,
     col: usize,
@@ -62,14 +62,14 @@ fn _build_pathfinder(
     direction: Direction,
 ) -> Pathfinder<'_> {
     let mut path: HashMap<Location, HashSet<Direction>> = HashMap::new();
-    path.insert(location.clone(), HashSet::from([direction.clone()]));
+    path.insert(location, HashSet::from([direction]));
     Pathfinder {
         map,
         path,
         obstacles: HashSet::new(),
-        location: location.clone(),
+        location: location,
         start_location: location,
-        direction: direction.clone(),
+        direction: direction,
         start_direction: direction,
     }
 }
@@ -94,14 +94,11 @@ impl Pathfinder<'_> {
             {
                 self.map[potential_next.row][potential_next.col] = '#';
 
-                let mut subpathfinder = _build_pathfinder(
-                    self.map,
-                    self.start_location.clone(),
-                    self.start_direction.clone(),
-                );
+                let mut subpathfinder =
+                    _build_pathfinder(self.map, self.start_location, self.start_direction);
                 if subpathfinder.populate_path() == PathType::Loop {
                     count += 1;
-                    self.obstacles.insert(potential_next.clone());
+                    self.obstacles.insert(potential_next);
                 }
 
                 self.map[potential_next.row][potential_next.col] = '.';
@@ -123,9 +120,9 @@ impl Pathfinder<'_> {
                 panic!("Found unexpected looping path");
             }
             self.path
-                .entry(self.location.clone())
+                .entry(self.location)
                 .or_default()
-                .insert(self.direction.clone());
+                .insert(self.direction);
         }
         count
     }
@@ -191,9 +188,9 @@ impl Pathfinder<'_> {
                 return PathType::Loop;
             }
             self.path
-                .entry(self.location.clone())
+                .entry(self.location)
                 .or_default()
-                .insert(self.direction.clone());
+                .insert(self.direction);
         }
         PathType::Terminate
     }
