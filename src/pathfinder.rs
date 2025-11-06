@@ -87,9 +87,8 @@ impl Pathfinder<'_> {
     }
 
     pub fn distinct_obstacles(&mut self) -> u64 {
-        let (tx, rx) = mpsc::channel();
-
         thread::scope(|s| {
+            let (tx, rx) = mpsc::channel();
             while !self.is_path_end() {
                 let potential_next = self.get_next_location();
                 if self.map[potential_next.row][potential_next.col] == '.'
@@ -128,10 +127,9 @@ impl Pathfinder<'_> {
                     .or_default()
                     .insert(self.direction);
             }
-        });
-
-        drop(tx);
-        rx.iter().filter(|t| *t == PathType::Loop).count() as u64
+            drop(tx);
+            rx.iter().filter(|t| *t == PathType::Loop).count() as u64
+        })
     }
 
     fn is_path_end(&self) -> bool {
