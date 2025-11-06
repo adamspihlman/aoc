@@ -91,7 +91,28 @@ impl Pathfinder<'_> {
     }
 
     pub fn distinct_obstacles(&mut self) -> u64 {
-        0
+        let blocked_location = self.location.clone();
+        let count = 0;
+
+        while !self.is_path_end() {
+            let potential_next = self.get_next_location();
+            if self.is_obstacle(&potential_next) {
+                self.rotate_direction();
+            } else {
+                // spawn new pathfinder
+                self.location = potential_next;
+            }
+
+            let state = PathState {
+                loc: self.location.clone(),
+                dir: self.direction.clone(),
+            };
+            if self.path.contains(&state) {
+                // return PathType::Loop;
+            }
+            self.path.insert(state);
+        }
+        count
     }
 
     fn is_path_end(&self) -> bool {
@@ -144,11 +165,11 @@ impl Pathfinder<'_> {
             } else {
                 self.location = potential_next;
             }
+
             let state = PathState {
                 loc: self.location.clone(),
                 dir: self.direction.clone(),
             };
-
             if self.path.contains(&state) {
                 return PathType::Loop;
             }
