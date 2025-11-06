@@ -154,6 +154,6 @@ impl Pathfinder<'_> {
             }
             self.path.insert(state);
         }
-        return PathType::Terminate;
+        PathType::Terminate
     }
 }
