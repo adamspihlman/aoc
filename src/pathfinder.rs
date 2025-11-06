@@ -2,13 +2,14 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 pub struct Pathfinder<'a> {
-    map: &'a mut Vec<Vec<char>>,
+    map: &'a Vec<Vec<char>>,
     path: HashMap<Location, HashSet<Direction>>,
     obstacles: HashSet<Location>,
     location: Location,
     start_location: Location,
     direction: Direction,
     start_direction: Direction,
+    extra_obstacle: Option<Location>,
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Copy, Clone)]
@@ -51,15 +52,16 @@ fn find_start(map: &[Vec<char>]) -> (Location, Direction) {
     panic!("Failed to find start location in map");
 }
 
-pub fn build_pathfinder(map: &mut Vec<Vec<char>>) -> Pathfinder<'_> {
+pub fn build_pathfinder(map: &Vec<Vec<char>>) -> Pathfinder<'_> {
     let (location, direction) = find_start(map);
-    _build_pathfinder(map, location, direction)
+    _build_pathfinder(map, location, direction, None)
 }
 
 fn _build_pathfinder(
-    map: &mut Vec<Vec<char>>,
+    map: &Vec<Vec<char>>,
     location: Location,
     direction: Direction,
+    extra_obstacle: Option<Location>,
 ) -> Pathfinder<'_> {
     let mut path: HashMap<Location, HashSet<Direction>> = HashMap::new();
     path.insert(location, HashSet::from([direction]));
@@ -67,10 +69,11 @@ fn _build_pathfinder(
         map,
         path,
         obstacles: HashSet::new(),
-        location: location,
+        location,
         start_location: location,
-        direction: direction,
+        direction,
         start_direction: direction,
+        extra_obstacle,
     }
 }
 
@@ -92,16 +95,16 @@ impl Pathfinder<'_> {
                 && !self.obstacles.contains(&potential_next)
                 && !self.path.contains_key(&potential_next)
             {
-                self.map[potential_next.row][potential_next.col] = '#';
-
-                let mut subpathfinder =
-                    _build_pathfinder(self.map, self.start_location, self.start_direction);
+                let mut subpathfinder = _build_pathfinder(
+                    self.map,
+                    self.start_location,
+                    self.start_direction,
+                    Some(potential_next),
+                );
                 if subpathfinder.populate_path() == PathType::Loop {
                     count += 1;
                     self.obstacles.insert(potential_next);
                 }
-
-                self.map[potential_next.row][potential_next.col] = '.';
             }
 
             if self.is_obstacle(&potential_next) {
@@ -158,6 +161,10 @@ impl Pathfinder<'_> {
 
     fn is_obstacle(&self, location: &Location) -> bool {
         self.map[location.row][location.col] == '#'
+            || match self.extra_obstacle {
+                Some(loc) => loc == *location,
+                None => false,
+            }
     }
 
     fn rotate_direction(&mut self) {
