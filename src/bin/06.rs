@@ -1,10 +1,17 @@
 advent_of_code::solution!(6);
 
-pub fn part_one(input: &str) -> Option<u64> {
-    None
+fn parse_input(input: &str) -> Vec<Vec<char>> {
+    input.lines().map(|line| line.chars().collect()).collect()
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
+pub fn part_one(input: &str) -> Option<u64> {
+    let map = parse_input(input);
+    let mut pathfinder = advent_of_code::pathfinder::build_pathfinder(map);
+    let result = pathfinder.distinct_positions();
+    Some(result)
+}
+
+pub fn part_two(_input: &str) -> Option<u64> {
     None
 }
 
