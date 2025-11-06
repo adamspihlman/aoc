@@ -49,4 +49,12 @@ mod tests {
         ));
         assert_eq!(result, Some(1));
     }
+
+    #[test]
+    #[should_panic]
+    fn test_part_two_loop_panic() {
+        part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 3,
+        ));
+    }
 }

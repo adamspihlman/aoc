@@ -1,21 +1,14 @@
 use std::collections::HashSet;
 
-// TODO:
-// implement distinct_obstacles for Pathfinder class
-//   this method should, at each step of the path, check if it can insert an obstacle in front of
-//   itself (it only cannot if there is already an obstacle there, if it's up against a border, or
-//   if that location happens to be the original start location). If it can insert an obstacle, it
-//   should modify the map to contain an obstacle at that spot, then it should spawn a new
-//   Pathfinder object with that mutated map and an updated start location. It should then query
-//   that Pathfinder to determine if the path with the new obstacle loops, or if it terminates.
-//   After this, it should remove the obstacle and continue on its path.
-
 #[derive(Debug)]
 pub struct Pathfinder<'a> {
     map: &'a mut Vec<Vec<char>>,
     path: HashSet<PathState>,
+    obstacles: HashSet<Location>,
     location: Location,
+    start_location: Location,
     direction: Direction,
+    start_direction: Direction,
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
@@ -82,8 +75,11 @@ fn _build_pathfinder(
     Pathfinder {
         map,
         path,
-        location,
-        direction,
+        obstacles: HashSet::new(),
+        location: location.clone(),
+        start_location: location,
+        direction: direction.clone(),
+        start_direction: direction,
     }
 }
 
@@ -101,15 +97,31 @@ impl Pathfinder<'_> {
     }
 
     pub fn distinct_obstacles(&mut self) -> u64 {
-        // let blocked_location = self.location.clone();
-        let count = 0;
+        let mut count = 0;
 
         while !self.is_path_end() {
             let potential_next = self.get_next_location();
+            if self.map[potential_next.row][potential_next.col] == '.'
+                && !self.obstacles.contains(&potential_next)
+            {
+                self.map[potential_next.row][potential_next.col] = '#';
+
+                let mut subpathfinder = _build_pathfinder(
+                    self.map,
+                    self.start_location.clone(),
+                    self.start_direction.clone(),
+                );
+                if subpathfinder.populate_path() == PathType::Loop {
+                    count += 1;
+                    self.obstacles.insert(potential_next.clone());
+                }
+
+                self.map[potential_next.row][potential_next.col] = '.';
+            }
+
             if self.is_obstacle(&potential_next) {
                 self.rotate_direction();
             } else {
-                // spawn new pathfinder
                 self.location = potential_next;
             }
 
@@ -118,7 +130,7 @@ impl Pathfinder<'_> {
                 dir: self.direction.clone(),
             };
             if self.path.contains(&state) {
-                // return PathType::Loop;
+                panic!("Found unexpected looping path");
             }
             self.path.insert(state);
         }
@@ -167,7 +179,7 @@ impl Pathfinder<'_> {
         };
     }
 
-    fn populate_path(&mut self) -> PathType {
+    pub(self) fn populate_path(&mut self) -> PathType {
         while !self.is_path_end() {
             let potential_next = self.get_next_location();
             if self.is_obstacle(&potential_next) {
