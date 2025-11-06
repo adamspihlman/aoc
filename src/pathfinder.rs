@@ -89,46 +89,46 @@ impl Pathfinder<'_> {
     pub fn distinct_obstacles(&mut self) -> u64 {
         let (tx, rx) = mpsc::channel();
 
-        while !self.is_path_end() {
-            let potential_next = self.get_next_location();
-            if self.map[potential_next.row][potential_next.col] == '.'
-                && !self.path.contains_key(&potential_next)
-            {
-                let mut subpathfinder = _build_pathfinder(
-                    self.map,
-                    self.start_location,
-                    self.start_direction,
-                    Some(potential_next),
-                );
-                let tx_clone = tx.clone();
-                thread::scope(|s| {
+        thread::scope(|s| {
+            while !self.is_path_end() {
+                let potential_next = self.get_next_location();
+                if self.map[potential_next.row][potential_next.col] == '.'
+                    && !self.path.contains_key(&potential_next)
+                {
+                    let mut subpathfinder = _build_pathfinder(
+                        self.map,
+                        self.start_location,
+                        self.start_direction,
+                        Some(potential_next),
+                    );
+                    let tx_clone = tx.clone();
                     s.spawn(move || {
                         let pathtype = subpathfinder.populate_path();
                         tx_clone.send(pathtype).unwrap();
                     });
-                });
-            }
+                }
 
-            if self.is_obstacle(&potential_next) {
-                self.rotate_direction();
-            } else {
-                self.location = potential_next;
-            }
+                if self.is_obstacle(&potential_next) {
+                    self.rotate_direction();
+                } else {
+                    self.location = potential_next;
+                }
 
-            if self.path.contains_key(&self.location)
-                && self
-                    .path
-                    .get(&self.location)
-                    .unwrap()
-                    .contains(&self.direction)
-            {
-                panic!("Found unexpected looping path");
+                if self.path.contains_key(&self.location)
+                    && self
+                        .path
+                        .get(&self.location)
+                        .unwrap()
+                        .contains(&self.direction)
+                {
+                    panic!("Found unexpected looping path");
+                }
+                self.path
+                    .entry(self.location)
+                    .or_default()
+                    .insert(self.direction);
             }
-            self.path
-                .entry(self.location)
-                .or_default()
-                .insert(self.direction);
-        }
+        });
 
         drop(tx);
         rx.iter().filter(|t| *t == PathType::Loop).count() as u64
