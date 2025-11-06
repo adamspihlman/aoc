@@ -29,6 +29,14 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    fn test_part_one_loop_panic() {
+        part_one(&advent_of_code::template::read_file_part(
+            "examples", DAY, 3,
+        ));
+    }
+
+    #[test]
     fn test_part_two_default() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(6));

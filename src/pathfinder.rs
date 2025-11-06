@@ -28,6 +28,12 @@ struct Location {
     col: usize,
 }
 
+#[derive(PartialEq, Debug)]
+enum PathType {
+    Loop,
+    Terminate,
+}
+
 fn find_start(map: &[Vec<char>]) -> (Location, Direction) {
     for (row_idx, row_val) in map.iter().enumerate() {
         for (col_idx, col_val) in row_val.iter().enumerate() {
@@ -73,7 +79,10 @@ fn _build_pathfinder(
 
 impl Pathfinder<'_> {
     pub fn distinct_positions(&mut self) -> u64 {
-        self.populate_path();
+        let path_type = self.populate_path();
+        if path_type == PathType::Loop {
+            panic!("Unexpected looping path found");
+        }
         self.path
             .iter()
             .map(|s| &s.loc)
@@ -127,19 +136,24 @@ impl Pathfinder<'_> {
         };
     }
 
-    fn populate_path(&mut self) {
+    fn populate_path(&mut self) -> PathType {
         while !self.is_path_end() {
             let potential_next = self.get_next_location();
             if self.is_obstacle(&potential_next) {
                 self.rotate_direction();
             } else {
                 self.location = potential_next;
-                let state = PathState {
-                    loc: self.location.clone(),
-                    dir: self.direction.clone(),
-                };
-                self.path.insert(state);
             }
+            let state = PathState {
+                loc: self.location.clone(),
+                dir: self.direction.clone(),
+            };
+
+            if self.path.contains(&state) {
+                return PathType::Loop;
+            }
+            self.path.insert(state);
         }
+        return PathType::Terminate;
     }
 }
