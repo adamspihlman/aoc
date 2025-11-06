@@ -1,10 +1,11 @@
 use std::collections::{HashMap, HashSet};
+use std::sync::mpsc;
+use std::thread;
 
 #[derive(Debug)]
 pub struct Pathfinder<'a> {
     map: &'a Vec<Vec<char>>,
     path: HashMap<Location, HashSet<Direction>>,
-    obstacles: HashSet<Location>,
     location: Location,
     start_location: Location,
     direction: Direction,
@@ -68,7 +69,6 @@ fn _build_pathfinder(
     Pathfinder {
         map,
         path,
-        obstacles: HashSet::new(),
         location,
         start_location: location,
         direction,
@@ -87,12 +87,11 @@ impl Pathfinder<'_> {
     }
 
     pub fn distinct_obstacles(&mut self) -> u64 {
-        let mut count = 0;
+        let (tx, rx) = mpsc::channel();
 
         while !self.is_path_end() {
             let potential_next = self.get_next_location();
             if self.map[potential_next.row][potential_next.col] == '.'
-                && !self.obstacles.contains(&potential_next)
                 && !self.path.contains_key(&potential_next)
             {
                 let mut subpathfinder = _build_pathfinder(
@@ -101,10 +100,13 @@ impl Pathfinder<'_> {
                     self.start_direction,
                     Some(potential_next),
                 );
-                if subpathfinder.populate_path() == PathType::Loop {
-                    count += 1;
-                    self.obstacles.insert(potential_next);
-                }
+                let tx_clone = tx.clone();
+                thread::scope(|s| {
+                    s.spawn(move || {
+                        let pathtype = subpathfinder.populate_path();
+                        tx_clone.send(pathtype).unwrap();
+                    });
+                });
             }
 
             if self.is_obstacle(&potential_next) {
@@ -127,7 +129,9 @@ impl Pathfinder<'_> {
                 .or_default()
                 .insert(self.direction);
         }
-        count
+
+        drop(tx);
+        rx.iter().filter(|t| *t == PathType::Loop).count() as u64
     }
 
     fn is_path_end(&self) -> bool {
