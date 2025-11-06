@@ -44,8 +44,7 @@ fn find_start(map: &[Vec<char>]) -> (Location, Direction) {
 
 pub fn build_pathfinder(map: Vec<Vec<char>>) -> Pathfinder {
     let (location, direction) = find_start(&map);
-    let mut path: HashSet<Location> = HashSet::new();
-    path.insert(location.clone());
+    let path: HashSet<Location> = HashSet::from([location.clone()]);
     Pathfinder {
         map,
         path,
@@ -107,11 +106,9 @@ impl Pathfinder {
             let potential_next = self.get_next_location();
             if self.is_obstacle(&potential_next) {
                 self.rotate_direction();
-                continue;
             } else {
                 self.location = potential_next;
                 self.path.insert(self.location.clone());
-                continue;
             }
         }
     }
