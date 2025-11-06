@@ -1,20 +1,14 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 pub struct Pathfinder<'a> {
     map: &'a mut Vec<Vec<char>>,
-    path: HashSet<PathState>,
+    path: HashMap<Location, HashSet<Direction>>,
     obstacles: HashSet<Location>,
     location: Location,
     start_location: Location,
     direction: Direction,
     start_direction: Direction,
-}
-
-#[derive(Hash, Eq, PartialEq, Debug, Clone)]
-struct PathState {
-    loc: Location,
-    dir: Direction,
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
@@ -67,11 +61,8 @@ fn _build_pathfinder(
     location: Location,
     direction: Direction,
 ) -> Pathfinder<'_> {
-    let state = PathState {
-        loc: location.clone(),
-        dir: direction.clone(),
-    };
-    let path: HashSet<PathState> = HashSet::from([state]);
+    let mut path: HashMap<Location, HashSet<Direction>> = HashMap::new();
+    path.insert(location.clone(), HashSet::from([direction.clone()]));
     Pathfinder {
         map,
         path,
@@ -89,11 +80,7 @@ impl Pathfinder<'_> {
         if path_type == PathType::Loop {
             panic!("Unexpected looping path found");
         }
-        self.path
-            .iter()
-            .map(|s| &s.loc)
-            .collect::<HashSet<_>>()
-            .len() as u64
+        self.path.len() as u64
     }
 
     pub fn distinct_obstacles(&mut self) -> u64 {
@@ -125,14 +112,19 @@ impl Pathfinder<'_> {
                 self.location = potential_next;
             }
 
-            let state = PathState {
-                loc: self.location.clone(),
-                dir: self.direction.clone(),
-            };
-            if self.path.contains(&state) {
+            if self.path.contains_key(&self.location)
+                && self
+                    .path
+                    .get(&self.location)
+                    .unwrap()
+                    .contains(&self.direction)
+            {
                 panic!("Found unexpected looping path");
             }
-            self.path.insert(state);
+            self.path
+                .entry(self.location.clone())
+                .or_default()
+                .insert(self.direction.clone());
         }
         count
     }
@@ -188,14 +180,19 @@ impl Pathfinder<'_> {
                 self.location = potential_next;
             }
 
-            let state = PathState {
-                loc: self.location.clone(),
-                dir: self.direction.clone(),
-            };
-            if self.path.contains(&state) {
+            if self.path.contains_key(&self.location)
+                && self
+                    .path
+                    .get(&self.location)
+                    .unwrap()
+                    .contains(&self.direction)
+            {
                 return PathType::Loop;
             }
-            self.path.insert(state);
+            self.path
+                .entry(self.location.clone())
+                .or_default()
+                .insert(self.direction.clone());
         }
         PathType::Terminate
     }
