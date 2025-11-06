@@ -90,6 +90,7 @@ impl Pathfinder<'_> {
             let potential_next = self.get_next_location();
             if self.map[potential_next.row][potential_next.col] == '.'
                 && !self.obstacles.contains(&potential_next)
+                && !self.path.contains_key(&potential_next)
             {
                 self.map[potential_next.row][potential_next.col] = '#';
 
