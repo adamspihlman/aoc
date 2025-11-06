@@ -1,5 +1,15 @@
 use std::collections::HashSet;
 
+// TODO:
+// implement distinct_obstacles for Pathfinder class
+//   this method should, at each step of the path, check if it can insert an obstacle in front of
+//   itself (it only cannot if there is already an obstacle there, if it's up against a border, or
+//   if that location happens to be the original start location). If it can insert an obstacle, it
+//   should modify the map to contain an obstacle at that spot, then it should spawn a new
+//   Pathfinder object with that mutated map and an updated start location. It should then query
+//   that Pathfinder to determine if the path with the new obstacle loops, or if it terminates.
+//   After this, it should remove the obstacle and continue on its path.
+
 #[derive(Debug)]
 pub struct Pathfinder<'a> {
     map: &'a mut Vec<Vec<char>>,
