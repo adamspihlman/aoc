@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct Pathfinder<'a> {
-    map: &'a Vec<Vec<char>>,
+    map: &'a mut Vec<Vec<char>>,
     path: HashSet<PathState>,
     location: Location,
     direction: Direction,
@@ -54,13 +54,13 @@ fn find_start(map: &[Vec<char>]) -> (Location, Direction) {
     panic!("Failed to find start location in map");
 }
 
-pub fn build_pathfinder(map: &Vec<Vec<char>>) -> Pathfinder<'_> {
+pub fn build_pathfinder(map: &mut Vec<Vec<char>>) -> Pathfinder<'_> {
     let (location, direction) = find_start(map);
     _build_pathfinder(map, location, direction)
 }
 
 fn _build_pathfinder(
-    map: &Vec<Vec<char>>,
+    map: &mut Vec<Vec<char>>,
     location: Location,
     direction: Direction,
 ) -> Pathfinder<'_> {
@@ -91,7 +91,7 @@ impl Pathfinder<'_> {
     }
 
     pub fn distinct_obstacles(&mut self) -> u64 {
-        let blocked_location = self.location.clone();
+        // let blocked_location = self.location.clone();
         let count = 0;
 
         while !self.is_path_end() {

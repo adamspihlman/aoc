@@ -5,16 +5,16 @@ fn parse_input(input: &str) -> Vec<Vec<char>> {
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let map = parse_input(input);
-    let mut pathfinder = advent_of_code::pathfinder::build_pathfinder(&map);
+    let mut map = parse_input(input);
+    let mut pathfinder = advent_of_code::pathfinder::build_pathfinder(&mut map);
     let result = pathfinder.distinct_positions();
     Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let map = parse_input(input);
-    let mut pathfinder = advent_of_code::pathfinder::build_pathfinder(&map);
-    let result = pathfinder.distinct_obstacles();
+    let mut map = parse_input(input);
+    let mut pathfinder = advent_of_code::pathfinder::build_pathfinder(&mut map);
+    let result = pathfinder.distinct_positions();
     Some(result)
 }
 
