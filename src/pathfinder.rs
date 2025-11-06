@@ -113,10 +113,6 @@ impl Pathfinder {
                 self.path.insert(self.location.clone());
                 continue;
             }
-            // get next location
-            // check if location is obstacle
-            //     if not obstacle, update location and go to next iteration of loop
-            //     if obstacle, update direction and go to next iteration of loop
         }
     }
 }
