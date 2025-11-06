@@ -3,12 +3,18 @@ use std::collections::HashSet;
 #[derive(Debug)]
 pub struct Pathfinder {
     map: Vec<Vec<char>>,
-    path: HashSet<Location>,
+    path: HashSet<PathState>,
     location: Location,
     direction: Direction,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Hash, Eq, PartialEq, Debug, Clone)]
+struct PathState {
+    loc: Location,
+    dir: Direction,
+}
+
+#[derive(Hash, Eq, PartialEq, Debug, Clone)]
 enum Direction {
     Up,
     Down,
@@ -44,7 +50,11 @@ fn find_start(map: &[Vec<char>]) -> (Location, Direction) {
 
 pub fn build_pathfinder(map: Vec<Vec<char>>) -> Pathfinder {
     let (location, direction) = find_start(&map);
-    let path: HashSet<Location> = HashSet::from([location.clone()]);
+    let state = PathState {
+        loc: location.clone(),
+        dir: direction.clone(),
+    };
+    let path: HashSet<PathState> = HashSet::from([state]);
     Pathfinder {
         map,
         path,
@@ -56,7 +66,15 @@ pub fn build_pathfinder(map: Vec<Vec<char>>) -> Pathfinder {
 impl Pathfinder {
     pub fn distinct_positions(&mut self) -> u64 {
         self.populate_path();
-        self.path.len() as u64
+        self.path
+            .iter()
+            .map(|s| &s.loc)
+            .collect::<HashSet<_>>()
+            .len() as u64
+    }
+
+    pub fn distinct_obstacles(&mut self) -> u64 {
+        0
     }
 
     fn is_path_end(&self) -> bool {
@@ -108,7 +126,11 @@ impl Pathfinder {
                 self.rotate_direction();
             } else {
                 self.location = potential_next;
-                self.path.insert(self.location.clone());
+                let state = PathState {
+                    loc: self.location.clone(),
+                    dir: self.direction.clone(),
+                };
+                self.path.insert(state);
             }
         }
     }
