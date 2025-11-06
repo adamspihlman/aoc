@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 #[derive(Debug)]
-pub struct Pathfinder {
-    map: Vec<Vec<char>>,
+pub struct Pathfinder<'a> {
+    map: &'a Vec<Vec<char>>,
     path: HashSet<PathState>,
     location: Location,
     direction: Direction,
@@ -48,8 +48,16 @@ fn find_start(map: &[Vec<char>]) -> (Location, Direction) {
     panic!("Failed to find start location in map");
 }
 
-pub fn build_pathfinder(map: Vec<Vec<char>>) -> Pathfinder {
-    let (location, direction) = find_start(&map);
+pub fn build_pathfinder(map: &Vec<Vec<char>>) -> Pathfinder<'_> {
+    let (location, direction) = find_start(map);
+    _build_pathfinder(map, location, direction)
+}
+
+fn _build_pathfinder(
+    map: &Vec<Vec<char>>,
+    location: Location,
+    direction: Direction,
+) -> Pathfinder<'_> {
     let state = PathState {
         loc: location.clone(),
         dir: direction.clone(),
@@ -63,7 +71,7 @@ pub fn build_pathfinder(map: Vec<Vec<char>>) -> Pathfinder {
     }
 }
 
-impl Pathfinder {
+impl Pathfinder<'_> {
     pub fn distinct_positions(&mut self) -> u64 {
         self.populate_path();
         self.path
