@@ -1,3 +1,4 @@
+use crate::grid::Location;
 use std::collections::{HashMap, HashSet};
 use std::sync::mpsc;
 use std::thread;
@@ -19,12 +20,6 @@ enum Direction {
     Down,
     Left,
     Right,
-}
-
-#[derive(Hash, Eq, PartialEq, Debug, Copy, Clone)]
-struct Location {
-    row: usize,
-    col: usize,
 }
 
 #[derive(PartialEq, Debug)]
