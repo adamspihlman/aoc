@@ -140,10 +140,9 @@ impl Antennas {
     pub fn distinct_antinodes(&self, antinode: Antinode) -> u64 {
         let mut antinodes: HashSet<Location> = HashSet::new();
 
-        for antenna in self.antennas.keys() {
-            let start_locations = self.antennas.get(antenna).unwrap();
-            for (idx, left) in start_locations.iter().enumerate() {
-                for right in start_locations[idx + 1..].iter() {
+        for locations in self.antennas.values() {
+            for (idx, left) in locations.iter().enumerate() {
+                for right in locations[idx + 1..].iter() {
                     antinodes.extend(self.calculate_antinodes(left, right, antinode));
                 }
             }
