@@ -142,9 +142,9 @@ impl Antennas {
 
         for locations in self.antennas.values() {
             for (idx, left) in locations.iter().enumerate() {
-                for right in locations[idx + 1..].iter() {
-                    antinodes.extend(self.calculate_antinodes(left, right, antinode));
-                }
+                locations[idx + 1..].iter().for_each(|right| {
+                    antinodes.extend(self.calculate_antinodes(left, right, antinode))
+                });
             }
         }
 
