@@ -1,7 +1,7 @@
 advent_of_code::solution!(9);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let disk = advent_of_code::disk::Disk::from(input);
+    let mut disk = advent_of_code::disk::Disk::from(input);
     let result = disk.compute_checksum();
     Some(result)
 }
