@@ -59,7 +59,17 @@ impl Equation {
                     }
                 }
                 Operator::Concat => {
-                    return false;
+                    let cur_str = cur.to_string();
+                    let target_str = target.to_string();
+
+                    if target_str.ends_with(&cur_str) && target_str.len() > cur_str.len() {
+                        let next = target_str[0..target_str.len() - cur_str.len()]
+                            .parse::<u64>()
+                            .unwrap();
+                        if Equation::exists_solution(next, remaining, ops) {
+                            return true;
+                        }
+                    }
                 }
             }
         }
