@@ -4,14 +4,21 @@ use crate::grid::Location;
 
 #[derive(Debug)]
 pub struct Antennas {
-    map: Vec<Vec<char>>,
+    height: isize,
+    width: isize,
     antennas: HashMap<char, Vec<Location>>,
 }
 
 impl Antennas {
-    pub fn from(map: Vec<Vec<char>>) -> Antennas {
-        let antennas = Antennas::find_antennas(&map);
-        Antennas { map, antennas }
+    pub fn from(map: &[Vec<char>]) -> Antennas {
+        let height = map.len() as isize;
+        let width = map[0].len() as isize;
+        let antennas = Antennas::find_antennas(map);
+        Antennas {
+            height,
+            width,
+            antennas,
+        }
     }
 
     fn find_antennas(map: &[Vec<char>]) -> HashMap<char, Vec<Location>> {
@@ -37,9 +44,6 @@ impl Antennas {
     fn calculate_antinodes(&self, left: &Location, right: &Location) -> Vec<Location> {
         let mut result = Vec::new();
 
-        let height = self.map.len() as isize;
-        let width = self.map[0].len() as isize;
-
         let right_row = right.row as isize;
         let right_col = right.col as isize;
 
@@ -52,7 +56,7 @@ impl Antennas {
         let first_row = right_row + row_delta;
         let first_col = right_col + col_delta;
 
-        if first_row >= 0 && first_row < height && first_col >= 0 && first_col < width {
+        if first_row >= 0 && first_row < self.height && first_col >= 0 && first_col < self.width {
             result.push(Location {
                 row: first_row as usize,
                 col: first_col as usize,
@@ -62,7 +66,8 @@ impl Antennas {
         let second_row = left_row - row_delta;
         let second_col = left_col - col_delta;
 
-        if second_row >= 0 && second_row < height && second_col >= 0 && second_col < width {
+        if second_row >= 0 && second_row < self.height && second_col >= 0 && second_col < self.width
+        {
             result.push(Location {
                 row: second_row as usize,
                 col: second_col as usize,

@@ -2,7 +2,7 @@ advent_of_code::solution!(8);
 
 pub fn part_one(input: &str) -> Option<u64> {
     let map = advent_of_code::input::parse_2d_vector(input);
-    let antennas = advent_of_code::antennas::Antennas::from(map);
+    let antennas = advent_of_code::antennas::Antennas::from(&map);
     let result = antennas.distinct_antinodes();
     Some(result)
 }
