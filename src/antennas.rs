@@ -40,6 +40,9 @@ impl Antennas {
 
         antennas
     }
+    fn is_valid_location(&self, row: isize, col: isize) -> bool {
+        row >= 0 && row < self.height && col >= 0 && col < self.width
+    }
 
     fn calculate_antinodes(&self, left: &Location, right: &Location) -> Vec<Location> {
         let mut result = Vec::new();
@@ -56,7 +59,7 @@ impl Antennas {
         let first_row = right_row + row_delta;
         let first_col = right_col + col_delta;
 
-        if first_row >= 0 && first_row < self.height && first_col >= 0 && first_col < self.width {
+        if self.is_valid_location(first_row, first_col) {
             result.push(Location {
                 row: first_row as usize,
                 col: first_col as usize,
@@ -66,8 +69,7 @@ impl Antennas {
         let second_row = left_row - row_delta;
         let second_col = left_col - col_delta;
 
-        if second_row >= 0 && second_row < self.height && second_col >= 0 && second_col < self.width
-        {
+        if self.is_valid_location(second_row, second_col) {
             result.push(Location {
                 row: second_row as usize,
                 col: second_col as usize,
