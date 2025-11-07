@@ -1,3 +1,4 @@
+pub mod equation;
 pub mod order_rules;
 pub mod pathfinder;
 pub mod template;
