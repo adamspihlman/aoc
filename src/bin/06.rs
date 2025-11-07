@@ -25,6 +25,12 @@ mod tests {
     }
 
     #[test]
+    fn test_part_one_solution() {
+        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(4752));
+    }
+
+    #[test]
     #[should_panic]
     fn test_part_one_loop_panic() {
         part_one(&advent_of_code::template::read_file_part(
@@ -36,6 +42,12 @@ mod tests {
     fn test_part_two_default() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(6));
+    }
+
+    #[test]
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(1719));
     }
 
     #[test]

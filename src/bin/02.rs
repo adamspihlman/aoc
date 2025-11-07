@@ -116,4 +116,16 @@ mod tests {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(4));
     }
+
+    #[test]
+    fn test_part_one_solution() {
+        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(639));
+    }
+
+    #[test]
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(656));
+    }
 }
