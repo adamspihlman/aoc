@@ -49,45 +49,39 @@ impl Disk {
         }
     }
 
+    fn get_last_file_block(&mut self) -> usize {
+        while self
+            .disk_locations
+            .pop_if(|loc| *loc == DiskLocation::Blank)
+            .is_some()
+        {
+            continue;
+        }
+        self.disk_locations.len() - 1
+    }
+
     pub fn compute_checksum(&mut self) -> u64 {
-        let mut compact: Vec<u64> = Vec::new();
-        let mut next_index = 0;
-        let mut prev_file_id = 0;
+        let mut start_index = 0;
+        let mut end_index = self.get_last_file_block();
 
-        while prev_file_id < (self.file_lengths.len() - 1) as u64 {
-            let location = self.disk_locations[next_index];
-            match location {
-                DiskLocation::File(file_id) => {
-                    prev_file_id = file_id;
-                    compact.push(file_id);
-                    let index = file_id as usize;
-                    if self.file_lengths[index] > 0 {
-                        self.file_lengths[index] -= 1;
-                    }
-                }
+        while start_index <= end_index {
+            match self.disk_locations[start_index] {
+                DiskLocation::File(_) => (),
                 DiskLocation::Blank => {
-                    while self.file_lengths[self.file_lengths.len() - 1] == 0 {
-                        self.file_lengths.pop();
-                    }
-
-                    let file_id = self.file_lengths.len() - 1;
-                    compact.push(file_id as u64);
-
-                    if self.file_lengths[file_id] <= 1 {
-                        self.file_lengths.pop();
-                    } else {
-                        self.file_lengths[file_id] -= 1;
-                    }
-                    self.blank_swap_count -= 1;
+                    self.disk_locations.swap(start_index, end_index);
+                    end_index = self.get_last_file_block();
                 }
             }
-            next_index += 1;
+            start_index += 1;
         }
 
-        compact
+        self.disk_locations
             .iter()
             .enumerate()
-            .map(|(index, id)| index as u64 * id)
+            .map(|(index, loc)| match loc {
+                DiskLocation::File(file_id) => index as u64 * file_id,
+                DiskLocation::Blank => panic!("Unexpected blank disk block"),
+            })
             .sum()
     }
 }
