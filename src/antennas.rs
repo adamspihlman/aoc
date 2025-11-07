@@ -9,6 +9,12 @@ pub struct Antennas {
     antennas: HashMap<char, Vec<Location>>,
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Antinode {
+    Resonant,
+    Harmonic,
+}
+
 impl Antennas {
     pub fn from(map: &[Vec<char>]) -> Antennas {
         let height = map.len() as isize;
@@ -44,14 +50,14 @@ impl Antennas {
         row >= 0 && row < self.height && col >= 0 && col < self.width
     }
 
-    fn calculate_antinodes(&self, left: &Location, right: &Location) -> Vec<Location> {
+    fn calculate_resonant_antinodes(&self, left: &Location, right: &Location) -> Vec<Location> {
         let mut result = Vec::new();
-
-        let right_row = right.row as isize;
-        let right_col = right.col as isize;
 
         let left_row = left.row as isize;
         let left_col = left.col as isize;
+
+        let right_row = right.row as isize;
+        let right_col = right.col as isize;
 
         let row_delta = right_row - left_row;
         let col_delta = right_col - left_col;
@@ -78,7 +84,59 @@ impl Antennas {
         result
     }
 
-    pub fn distinct_antinodes(&self) -> u64 {
+    fn calculate_harmonic_antinodes(&self, left: &Location, right: &Location) -> Vec<Location> {
+        let mut result = Vec::new();
+
+        let left_row = left.row as isize;
+        let left_col = left.col as isize;
+
+        let right_row = right.row as isize;
+        let right_col = right.col as isize;
+
+        let mut row_delta = right_row - left_row;
+        let mut col_delta = right_col - left_col;
+
+        let gcd = num_integer::gcd(row_delta, col_delta);
+        row_delta /= gcd;
+        col_delta /= gcd;
+
+        let mut antinode_row = left_row;
+        let mut antinode_col = left_col;
+        while self.is_valid_location(antinode_row, antinode_col) {
+            result.push(Location {
+                row: antinode_row as usize,
+                col: antinode_col as usize,
+            });
+            antinode_row += row_delta;
+            antinode_col += col_delta;
+        }
+        antinode_row = left_row - row_delta;
+        antinode_col = left_col - col_delta;
+        while self.is_valid_location(antinode_row, antinode_col) {
+            result.push(Location {
+                row: antinode_row as usize,
+                col: antinode_col as usize,
+            });
+            antinode_row -= row_delta;
+            antinode_col -= col_delta;
+        }
+
+        result
+    }
+
+    fn calculate_antinodes(
+        &self,
+        left: &Location,
+        right: &Location,
+        antinode: Antinode,
+    ) -> Vec<Location> {
+        match antinode {
+            Antinode::Resonant => self.calculate_resonant_antinodes(left, right),
+            Antinode::Harmonic => self.calculate_harmonic_antinodes(left, right),
+        }
+    }
+
+    pub fn distinct_antinodes(&self, antinode: Antinode) -> u64 {
         let mut antinodes: HashSet<Location> = HashSet::new();
 
         for antenna in self.antennas.keys() {
@@ -86,7 +144,7 @@ impl Antennas {
             for (idx, left) in start_locations {
                 let end_locations = self.antennas.get(antenna).unwrap()[idx + 1..].iter();
                 for right in end_locations {
-                    antinodes.extend(self.calculate_antinodes(left, right));
+                    antinodes.extend(self.calculate_antinodes(left, right, antinode));
                 }
             }
         }
