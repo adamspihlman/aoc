@@ -8,9 +8,13 @@ fn parse_input(input: &str) -> Vec<Equation> {
 
 pub fn part_one(input: &str) -> Option<u64> {
     let equations = parse_input(input);
+    let ops = vec![
+        advent_of_code::equation::Operator::Add,
+        advent_of_code::equation::Operator::Multiply,
+    ];
     let result = equations
         .into_iter()
-        .filter(|e| e.is_solvable())
+        .filter(|e| e.is_solvable(&ops))
         .map(|e| e.get_result())
         .sum();
     Some(result)

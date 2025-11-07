@@ -4,6 +4,12 @@ pub struct Equation {
     terms: Vec<u64>,
 }
 
+pub enum Operator {
+    Add,
+    Multiply,
+    Concat,
+}
+
 impl Equation {
     pub fn from(line: &str) -> Equation {
         let mut iter = line.split(':');
@@ -17,15 +23,15 @@ impl Equation {
         Equation { result, terms }
     }
 
-    pub fn is_solvable(&self) -> bool {
-        Equation::exists_solution(self.result, &self.terms)
+    pub fn is_solvable(&self, ops: &[Operator]) -> bool {
+        Equation::exists_solution(self.result, &self.terms, ops)
     }
 
     pub fn get_result(&self) -> u64 {
         self.result
     }
 
-    fn exists_solution(target: u64, terms: &[u64]) -> bool {
+    fn exists_solution(target: u64, terms: &[u64], ops: &[Operator]) -> bool {
         if terms.is_empty() {
             return false;
         }
@@ -36,7 +42,27 @@ impl Equation {
         let cur = terms[terms.len() - 1];
         let remaining = &terms[0..terms.len() - 1];
 
-        (target >= cur && Equation::exists_solution(target - cur, remaining))
-            || (target.is_multiple_of(cur) && Equation::exists_solution(target / cur, remaining))
+        for op in ops {
+            match op {
+                Operator::Add => {
+                    let solved =
+                        target >= cur && Equation::exists_solution(target - cur, remaining, ops);
+                    if solved {
+                        return true;
+                    }
+                }
+                Operator::Multiply => {
+                    let solved = target.is_multiple_of(cur)
+                        && Equation::exists_solution(target / cur, remaining, ops);
+                    if solved {
+                        return true;
+                    }
+                }
+                Operator::Concat => {
+                    return false;
+                }
+            }
+        }
+        false
     }
 }
