@@ -46,6 +46,7 @@ impl Antennas {
 
         antennas
     }
+
     fn is_valid_location(&self, row: isize, col: isize) -> bool {
         row >= 0 && row < self.height && col >= 0 && col < self.width
     }
@@ -140,10 +141,9 @@ impl Antennas {
         let mut antinodes: HashSet<Location> = HashSet::new();
 
         for antenna in self.antennas.keys() {
-            let start_locations = self.antennas.get(antenna).unwrap().iter().enumerate();
-            for (idx, left) in start_locations {
-                let end_locations = self.antennas.get(antenna).unwrap()[idx + 1..].iter();
-                for right in end_locations {
+            let start_locations = self.antennas.get(antenna).unwrap();
+            for (idx, left) in start_locations.iter().enumerate() {
+                for right in start_locations[idx + 1..].iter() {
                     antinodes.extend(self.calculate_antinodes(left, right, antinode));
                 }
             }
