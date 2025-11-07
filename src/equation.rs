@@ -36,7 +36,7 @@ impl Equation {
         let cur = terms[terms.len() - 1];
         let remaining = &terms[0..terms.len() - 1];
 
-        Equation::exists_solution(target - cur, remaining)
+        (target >= cur && Equation::exists_solution(target - cur, remaining))
             || (target.is_multiple_of(cur) && Equation::exists_solution(target / cur, remaining))
     }
 }
