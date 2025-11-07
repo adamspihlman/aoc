@@ -1,17 +1,15 @@
 advent_of_code::solution!(4);
 
-fn parse_input(input: &str) -> Vec<Vec<char>> {
-    input.lines().map(|line| line.chars().collect()).collect()
-}
-
 pub fn part_one(input: &str) -> Option<u64> {
-    let words = advent_of_code::word_search::build_words(parse_input(input));
+    let words =
+        advent_of_code::word_search::build_words(advent_of_code::input::parse_2d_vector(input));
 
     Some(words.word_search())
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let words = advent_of_code::word_search::build_words(parse_input(input));
+    let words =
+        advent_of_code::word_search::build_words(advent_of_code::input::parse_2d_vector(input));
 
     Some(words.x_search())
 }

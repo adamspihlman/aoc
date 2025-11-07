@@ -1,4 +1,5 @@
 pub mod equation;
+pub mod input;
 pub mod order_rules;
 pub mod pathfinder;
 pub mod template;
