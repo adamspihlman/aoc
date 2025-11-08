@@ -23,6 +23,10 @@ impl Topograph {
         self.heads.iter().map(|t| t.score(&self.map)).sum()
     }
 
+    pub fn rating(&self) -> u64 {
+        self.heads.iter().map(|t| t.rating(&self.map)).sum()
+    }
+
     fn get_trailheads(map: &[Vec<u32>]) -> HashSet<Trailhead> {
         let mut result = HashSet::new();
         for (row, row_val) in map.iter().enumerate() {
@@ -44,6 +48,10 @@ impl Trailhead {
         Trailhead::get_peaks(map, &mut peaks, 0, self.start);
 
         peaks.len() as u64
+    }
+
+    pub fn rating(&self, map: &[Vec<u32>]) -> u64 {
+        Trailhead::get_rating(map, 0, self.start)
     }
 
     fn get_location(
@@ -76,6 +84,36 @@ impl Trailhead {
             col: col as usize,
         };
         Some(result)
+    }
+
+    fn get_rating(map: &[Vec<u32>], altitude: u32, location: Location) -> u64 {
+        if altitude != map[location.row][location.col] {
+            return 0;
+        }
+
+        if altitude == 9 {
+            return 1;
+        }
+
+        let next_altitude = altitude + 1;
+
+        let directions = [
+            Direction::Up,
+            Direction::Down,
+            Direction::Left,
+            Direction::Right,
+        ];
+
+        directions
+            .iter()
+            .map(|&d| {
+                let next = Trailhead::get_location(map, location, d);
+                if let Some(next_location) = next {
+                    return Trailhead::get_rating(map, next_altitude, next_location);
+                }
+                0
+            })
+            .sum()
     }
 
     fn get_peaks(

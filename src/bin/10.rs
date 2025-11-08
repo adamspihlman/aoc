@@ -7,8 +7,11 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let map = advent_of_code::input::parse_2d_digit_vector(input);
+    let topograph = advent_of_code::topograph::Topograph::from(map);
+    let result = topograph.rating();
+    Some(result)
 }
 
 #[cfg(test)]
@@ -36,9 +39,8 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(81));
     }
 }
