@@ -1,5 +1,3 @@
-use std::{cmp::Reverse, collections::BTreeMap};
-
 #[derive(Debug, PartialEq, Copy, Clone)]
 enum DiskLocation {
     File(u64),
@@ -7,7 +5,7 @@ enum DiskLocation {
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
-struct FileBlock {
+struct MemoryBlock {
     pub start_index: usize,
     pub length: usize,
 }
@@ -15,20 +13,26 @@ struct FileBlock {
 #[derive(Debug)]
 pub struct Disk {
     disk_locations: Vec<DiskLocation>,
-    file_blocks: BTreeMap<Reverse<u64>, FileBlock>,
+    file_blocks: Vec<MemoryBlock>,
+    blank_blocks: Vec<MemoryBlock>,
 }
 
 impl Disk {
     pub fn from(input: &str) -> Disk {
         let encoding = input.trim().to_string();
         let mut disk_locations = Vec::new();
-        let mut file_blocks = BTreeMap::new();
+        let mut file_blocks = Vec::new();
+        let mut blank_blocks = Vec::new();
         let mut next_file_id = 0;
         let mut next_location = DiskLocation::File(next_file_id);
 
         for encode in encoding.chars() {
             let length = encode.to_digit(10).unwrap() as usize;
             let start_index = disk_locations.len();
+            let block = MemoryBlock {
+                start_index,
+                length,
+            };
 
             for _ in 0..length {
                 disk_locations.push(next_location);
@@ -36,17 +40,12 @@ impl Disk {
 
             match next_location {
                 DiskLocation::File(_) => {
-                    file_blocks.insert(
-                        Reverse(next_file_id),
-                        FileBlock {
-                            start_index,
-                            length,
-                        },
-                    );
+                    file_blocks.push(block);
                     next_file_id += 1;
                     next_location = DiskLocation::Blank;
                 }
                 DiskLocation::Blank => {
+                    blank_blocks.push(block);
                     next_location = DiskLocation::File(next_file_id);
                 }
             }
@@ -54,6 +53,7 @@ impl Disk {
         Disk {
             disk_locations,
             file_blocks,
+            blank_blocks,
         }
     }
 
@@ -64,16 +64,6 @@ impl Disk {
             start_index += 1;
         }
         start_index
-    }
-
-    fn get_blank_block_size(&self, start_index: usize) -> usize {
-        let mut end_index = start_index;
-        while end_index < self.disk_locations.len()
-            && self.disk_locations[end_index] == DiskLocation::Blank
-        {
-            end_index += 1;
-        }
-        end_index - start_index
     }
 
     fn get_last_file_block(&mut self) -> usize {
@@ -100,25 +90,42 @@ impl Disk {
 
     pub fn compute_block_checksum(&mut self) -> u64 {
         while !self.file_blocks.is_empty() {
-            let (Reverse(file_id), file_block) = self.file_blocks.pop_first().unwrap();
-            let mut start_index = self.get_first_blank_block_from(0);
+            let file_id = (self.file_blocks.len() - 1) as u64;
+            let file_block = self.file_blocks.pop().unwrap();
 
-            while start_index < file_block.start_index {
-                let block_size = self.get_blank_block_size(start_index);
+            match self.blank_blocks.iter_mut().position(|b| {
+                b.length >= file_block.length && b.start_index < file_block.start_index
+            }) {
+                Some(blank_blocks_index) => {
+                    let blank_block = &mut self.blank_blocks[blank_blocks_index];
 
-                if block_size >= file_block.length {
                     for idx in 0..file_block.length {
-                        self.disk_locations[start_index + idx] = DiskLocation::File(file_id);
+                        self.disk_locations[blank_block.start_index + idx] =
+                            DiskLocation::File(file_id);
                         self.disk_locations[file_block.start_index + idx] = DiskLocation::Blank;
                     }
-                    break;
-                } else {
-                    start_index = self.get_first_blank_block_from(start_index + block_size);
+                    blank_block.length -= file_block.length;
+                    blank_block.start_index += file_block.length;
+
+                    if blank_block.length == 0 {
+                        self.blank_blocks.remove(blank_blocks_index);
+                    }
+                }
+                None => {
+                    continue;
                 }
             }
         }
 
         self.checksum()
+    }
+
+    fn _print_disk(&self) {
+        self.disk_locations.iter().for_each(|l| match l {
+            DiskLocation::Blank => print!("_"),
+            DiskLocation::File(id) => print!("{}", id),
+        });
+        println!();
     }
 
     pub fn compute_contiguous_checksum(&mut self) -> u64 {
