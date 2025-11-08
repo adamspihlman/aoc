@@ -2,12 +2,14 @@ advent_of_code::solution!(9);
 
 pub fn part_one(input: &str) -> Option<u64> {
     let mut disk = advent_of_code::disk::Disk::from(input);
-    let result = disk.compute_checksum();
+    let result = disk.compute_contiguous_checksum();
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let mut disk = advent_of_code::disk::Disk::from(input);
+    let result = disk.compute_block_checksum();
+    Some(result)
 }
 
 #[cfg(test)]
@@ -21,10 +23,9 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(2858));
     }
 
     #[test]
