@@ -57,21 +57,6 @@ impl Disk {
         }
     }
 
-    fn jump_to_next_blank_block(&mut self, mut start_index: usize) -> usize {
-        while start_index < self.disk_locations.len() {
-            match self.disk_locations[start_index] {
-                DiskLocation::Blank => {
-                    break;
-                }
-                DiskLocation::File(file_id) => {
-                    let file_block = self.file_blocks.remove(&Reverse(file_id)).unwrap();
-                    start_index += file_block.length;
-                }
-            }
-        }
-        start_index
-    }
-
     fn get_first_blank_block_from(&self, mut start_index: usize) -> usize {
         while start_index < self.disk_locations.len()
             && self.disk_locations[start_index] != DiskLocation::Blank
@@ -113,37 +98,24 @@ impl Disk {
             .sum()
     }
 
-    fn find_sized_last_file_block(&mut self, max_length: usize) -> Option<(u64, FileBlock)> {
-        for (&Reverse(file_id), &file_block) in &self.file_blocks {
-            if file_block.length <= max_length {
-                self.file_blocks.remove(&Reverse(file_id));
-                return Some((file_id, file_block));
-            }
-        }
-        None
-    }
-
     pub fn compute_block_checksum(&mut self) -> u64 {
-        let mut start_index = self.jump_to_next_blank_block(0);
-        let mut end_index = self.get_last_file_block();
+        while !self.file_blocks.is_empty() {
+            let (Reverse(file_id), file_block) = self.file_blocks.pop_first().unwrap();
+            let mut start_index = self.get_first_blank_block_from(0);
 
-        while start_index <= end_index {
-            let blank_block_size = self.get_blank_block_size(start_index);
-            let candidate = self.find_sized_last_file_block(blank_block_size);
-            match candidate {
-                Some((file_id, file_block)) => {
+            while start_index < file_block.start_index {
+                let block_size = self.get_blank_block_size(start_index);
+
+                if block_size >= file_block.length {
                     for idx in 0..file_block.length {
                         self.disk_locations[start_index + idx] = DiskLocation::File(file_id);
                         self.disk_locations[file_block.start_index + idx] = DiskLocation::Blank;
                     }
-                    start_index += file_block.length;
-                    end_index = self.get_last_file_block();
-                }
-                None => {
-                    start_index = self.jump_to_next_blank_block(start_index + blank_block_size);
+                    break;
+                } else {
+                    start_index = self.get_first_blank_block_from(start_index + block_size);
                 }
             }
-            println!("{:?}", self.disk_locations);
         }
 
         self.checksum()
