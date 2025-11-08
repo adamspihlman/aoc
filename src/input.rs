@@ -5,6 +5,11 @@ pub fn parse_2d_vector(input: &str) -> Vec<Vec<char>> {
 pub fn parse_2d_digit_vector(input: &str) -> Vec<Vec<u32>> {
     input
         .lines()
-        .map(|line| line.chars().map(|c| c.to_digit(10).unwrap()).collect())
+        .map(|line| {
+            line.trim()
+                .chars()
+                .map(|c| c.to_digit(10).unwrap())
+                .collect()
+        })
         .collect()
 }

@@ -1,4 +1,4 @@
-use crate::grid::Location;
+use crate::grid::{Direction, Location};
 use std::collections::{HashMap, HashSet};
 use std::sync::mpsc;
 use std::thread;
@@ -12,14 +12,6 @@ pub struct Pathfinder<'a> {
     direction: Direction,
     start_direction: Direction,
     extra_obstacle: Option<Location>,
-}
-
-#[derive(Hash, Eq, PartialEq, Debug, Copy, Clone)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
 }
 
 #[derive(PartialEq, Debug)]
