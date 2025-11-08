@@ -1,6 +1,9 @@
 advent_of_code::solution!(10);
 
 pub fn part_one(input: &str) -> Option<u64> {
+    let map = advent_of_code::input::parse_2d_digit_vector(input);
+    let topograph = advent_of_code::topograph::Topograph::from(map);
+    dbg!(topograph);
     None
 }
 
