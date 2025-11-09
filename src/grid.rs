@@ -28,8 +28,8 @@ pub fn rotate_direction(direction: Direction) -> Direction {
     }
 }
 
-pub fn at<T: Clone>(map: &[Vec<T>], location: Location) -> T {
-    map[location.row][location.col].clone()
+pub fn at<T: Copy>(map: &[Vec<T>], location: Location) -> T {
+    map[location.row][location.col]
 }
 
 pub fn get_location<T>(

@@ -1,4 +1,4 @@
-use crate::grid::{Direction, Location};
+use crate::grid::{self, Direction, Location};
 use std::collections::{HashMap, HashSet};
 use std::sync::mpsc;
 use std::thread;
@@ -41,7 +41,7 @@ impl Pathfinder<'_> {
             let (tx, rx) = mpsc::channel();
             while !self.is_path_end() {
                 let potential_next = self.get_next_location();
-                if self.map[potential_next.row][potential_next.col] == '.'
+                if grid::at(self.map, potential_next) == '.'
                     && !self.path.contains_key(&potential_next)
                 {
                     let mut subpathfinder = Pathfinder::build_pathfinder(
@@ -57,7 +57,7 @@ impl Pathfinder<'_> {
                     });
                 }
 
-                if self.is_obstacle(&potential_next) {
+                if self.is_obstacle(potential_next) {
                     self.direction = crate::grid::rotate_direction(self.direction);
                 } else {
                     self.location = potential_next;
@@ -85,7 +85,7 @@ impl Pathfinder<'_> {
     pub(self) fn populate_path(&mut self) -> PathType {
         while !self.is_path_end() {
             let potential_next = self.get_next_location();
-            if self.is_obstacle(&potential_next) {
+            if self.is_obstacle(potential_next) {
                 self.direction = crate::grid::rotate_direction(self.direction);
             } else {
                 self.location = potential_next;
@@ -176,10 +176,10 @@ impl Pathfinder<'_> {
         }
     }
 
-    fn is_obstacle(&self, location: &Location) -> bool {
-        self.map[location.row][location.col] == '#'
+    fn is_obstacle(&self, location: Location) -> bool {
+        grid::at(self.map, location) == '#'
             || match self.extra_obstacle {
-                Some(loc) => loc == *location,
+                Some(loc) => loc == location,
                 None => false,
             }
     }

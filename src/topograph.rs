@@ -57,7 +57,7 @@ impl Trailhead {
     }
 
     fn get_rating(map: &[Vec<u32>], altitude: u32, location: Location) -> u64 {
-        if altitude != map[location.row][location.col] {
+        if altitude != grid::at(map, location) {
             return 0;
         }
 
@@ -85,7 +85,7 @@ impl Trailhead {
         altitude: u32,
         location: Location,
     ) {
-        if altitude != map[location.row][location.col] {
+        if altitude != grid::at(map, location) {
             return;
         }
 

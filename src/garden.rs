@@ -1,7 +1,6 @@
 use std::collections::{BTreeSet, HashSet, VecDeque};
 
-use crate::grid;
-use crate::grid::Location;
+use crate::grid::{self, Location};
 
 #[derive(Debug)]
 pub struct Garden {
@@ -74,7 +73,7 @@ impl Garden {
         grid::DIRECTIONS.iter().for_each(|&d| {
             let next = grid::get_location(&self.map, location, d);
             if let Some(next) = next {
-                if self.map[location.row][location.col] == self.map[next.row][next.col] {
+                if grid::at(&self.map, location) == grid::at(&self.map, next) {
                     num_neighbors += 1;
                     if !visited.contains(&next) {
                         plots.push_back(next);

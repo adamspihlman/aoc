@@ -33,8 +33,8 @@ impl Antennas {
         let mut antinodes: HashSet<Location> = HashSet::new();
 
         for locations in self.antennas.values() {
-            for (idx, left) in locations.iter().enumerate() {
-                locations[idx + 1..].iter().for_each(|right| {
+            for (idx, &left) in locations.iter().enumerate() {
+                locations[idx + 1..].iter().for_each(|&right| {
                     antinodes.extend(self.calculate_antinodes(left, right, antinode))
                 });
             }
@@ -67,7 +67,7 @@ impl Antennas {
         row >= 0 && row < self.height && col >= 0 && col < self.width
     }
 
-    fn calculate_resonant_antinodes(&self, left: &Location, right: &Location) -> Vec<Location> {
+    fn calculate_resonant_antinodes(&self, left: Location, right: Location) -> Vec<Location> {
         let mut result = Vec::new();
 
         let left_row = left.row as isize;
@@ -101,7 +101,7 @@ impl Antennas {
         result
     }
 
-    fn calculate_harmonic_antinodes(&self, left: &Location, right: &Location) -> Vec<Location> {
+    fn calculate_harmonic_antinodes(&self, left: Location, right: Location) -> Vec<Location> {
         let mut result = Vec::new();
 
         let left_row = left.row as isize;
@@ -143,8 +143,8 @@ impl Antennas {
 
     fn calculate_antinodes(
         &self,
-        left: &Location,
-        right: &Location,
+        left: Location,
+        right: Location,
         antinode: Antinode,
     ) -> Vec<Location> {
         match antinode {
