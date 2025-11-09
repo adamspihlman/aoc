@@ -27,37 +27,32 @@ mod tests {
     fn test_math_proof_of_concept() {
         let final_x = 8400;
         let final_y = 5400;
+        let final_x_f = final_x as f64;
+        let final_y_f = final_y as f64;
 
         let b_x = 22;
         let b_y = 67;
+        let b_x_f = b_x as f64;
+        let b_y_f = b_y as f64;
+
         let a_x = 94;
         let a_y = 34;
+        let a_x_f = a_x as f64;
+        let a_y_f = a_y as f64;
 
-        let prize_distance = ((8400.0 * 8400.0 + 5400.0 * 5400.0) as f64).sqrt();
+        let prize_distance = (final_x_f.powi(2) + final_y_f.powi(2)).sqrt();
 
-        let b_distance = ((22.0 * 22.0 + 67.0 * 67.0) as f64).sqrt();
+        let b_distance = (b_x_f.powi(2) + b_y_f.powi(2)).sqrt();
 
-        let prize_b_angle = ((5400.0 / 8400.0) as f64).atan() - ((67.0 / 22.0) as f64).atan();
+        let prize_b_angle = (final_y_f / final_x_f).atan() - (b_y_f / b_x_f).atan();
         let b_distance_on_prize = b_distance / prize_b_angle.cos();
         let b_normal_cost = 1.0 * (prize_distance / b_distance_on_prize);
 
-        let a_distance = ((94.0 * 94.0 + 34.0 * 34.0) as f64).sqrt();
+        let a_distance = (a_x_f.powi(2) + a_y_f.powi(2)).sqrt();
 
-        let prize_a_angle = ((5400.0 / 8400.0) as f64).atan() - ((34.0 / 94.0) as f64).atan();
+        let prize_a_angle = (final_y_f / final_x_f).atan() - (a_y_f / a_x_f).atan();
         let a_distance_on_prize = a_distance / prize_a_angle.cos();
         let a_normal_cost = 3.0 * (prize_distance / a_distance_on_prize);
-
-        dbg!(
-            prize_distance,
-            b_distance,
-            prize_b_angle,
-            b_distance_on_prize,
-            b_normal_cost,
-            a_distance,
-            prize_a_angle,
-            a_distance_on_prize,
-            a_normal_cost
-        );
 
         let mut b_press = 0;
         let mut a_press = 0;
@@ -100,6 +95,17 @@ mod tests {
         assert_eq!(b_press, 40);
         assert_eq!(a_press, 80);
         // assert!(false);
+        // dbg!(
+        //     prize_distance,
+        //     b_distance,
+        //     prize_b_angle,
+        //     b_distance_on_prize,
+        //     b_normal_cost,
+        //     a_distance,
+        //     prize_a_angle,
+        //     a_distance_on_prize,
+        //     a_normal_cost
+        // );
     }
 
     #[test]
