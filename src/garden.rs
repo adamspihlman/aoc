@@ -52,7 +52,9 @@ impl Garden {
             let location = plots.pop_front().unwrap();
             area += 1;
             perimeter += 4 - self.add_neighbors(location, &mut plots, &mut visited);
-            corners += self.count_corners(location);
+            if scale == PriceScale::Corner {
+                corners += self.count_corners(location);
+            }
         }
 
         match scale {
