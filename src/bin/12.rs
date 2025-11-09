@@ -3,14 +3,14 @@ advent_of_code::solution!(12);
 pub fn part_one(input: &str) -> Option<u64> {
     let map = advent_of_code::input::parse_2d_vector(input);
     let mut garden = advent_of_code::garden::Garden::from(map);
-    let result = garden.get_fence_perimeter_price();
+    let result = garden.get_fence_price(advent_of_code::garden::PriceScale::Perimeter);
     Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let map = advent_of_code::input::parse_2d_vector(input);
     let mut garden = advent_of_code::garden::Garden::from(map);
-    let result = garden.get_fence_corner_price();
+    let result = garden.get_fence_price(advent_of_code::garden::PriceScale::Corner);
     Some(result)
 }
 

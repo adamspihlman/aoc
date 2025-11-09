@@ -9,6 +9,12 @@ pub struct Garden {
     unvisited: BTreeSet<Location>,
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum PriceScale {
+    Perimeter,
+    Corner,
+}
+
 impl From<Vec<Vec<char>>> for Garden {
     fn from(value: Vec<Vec<char>>) -> Self {
         let mut unvisited: BTreeSet<Location> = BTreeSet::new();
@@ -25,43 +31,19 @@ impl From<Vec<Vec<char>>> for Garden {
 }
 
 impl Garden {
-    pub fn get_fence_perimeter_price(&mut self) -> u64 {
+    pub fn get_fence_price(&mut self, scale: PriceScale) -> u64 {
         let mut result = 0;
 
         while !self.unvisited.is_empty() {
             let start = self.unvisited.pop_first().unwrap();
-            result += self.compute_perimeter_price(start);
+            result += self.compute_price(start, scale);
         }
         result
     }
 
-    pub fn get_fence_corner_price(&mut self) -> u64 {
-        let mut result = 0;
-
-        while !self.unvisited.is_empty() {
-            let start = self.unvisited.pop_first().unwrap();
-            result += self.compute_corner_price(start);
-        }
-        result
-    }
-
-    fn compute_perimeter_price(&mut self, start: Location) -> u64 {
-        let mut area = 0_u64;
-        let mut perimeter = 0_u64;
-
-        let mut visited = HashSet::from([start]);
-        let mut plots: VecDeque<Location> = VecDeque::from([start]);
-        while !plots.is_empty() {
-            let location = plots.pop_front().unwrap();
-            area += 1;
-            perimeter += 4 - self.add_neighbors(location, &mut plots, &mut visited);
-        }
-
-        area * perimeter
-    }
-
-    fn compute_corner_price(&mut self, start: Location) -> u64 {
+    fn compute_price(&mut self, start: Location, scale: PriceScale) -> u64 {
         let mut area: u64 = 0;
+        let mut perimeter: u64 = 0;
         let mut corners: u64 = 0;
 
         let mut visited = HashSet::from([start]);
@@ -69,11 +51,14 @@ impl Garden {
         while !plots.is_empty() {
             let location = plots.pop_front().unwrap();
             area += 1;
-            self.add_neighbors(location, &mut plots, &mut visited);
+            perimeter += 4 - self.add_neighbors(location, &mut plots, &mut visited);
             corners += self.count_corners(location);
         }
 
-        area * corners
+        match scale {
+            PriceScale::Perimeter => area * perimeter,
+            PriceScale::Corner => area * corners,
+        }
     }
 
     fn add_neighbors(
@@ -101,7 +86,7 @@ impl Garden {
     }
 
     fn count_corners_at(&self, location: Location, first_direction: grid::Direction) -> u64 {
-        let mut num_corners = 0_u64;
+        let mut num_corners: u64 = 0;
         let plot = grid::at(&self.map, location);
         let second_direction = grid::rotate_direction(first_direction);
 
