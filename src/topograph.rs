@@ -13,12 +13,14 @@ struct Trailhead {
     start: grid::Location,
 }
 
-impl Topograph {
-    pub fn from(map: Vec<Vec<u32>>) -> Topograph {
-        let heads = Topograph::get_trailheads(&map);
-        Topograph { map, heads }
+impl From<Vec<Vec<u32>>> for Topograph {
+    fn from(input: Vec<Vec<u32>>) -> Self {
+        let heads = Topograph::get_trailheads(&input);
+        Self { map: input, heads }
     }
+}
 
+impl Topograph {
     pub fn score(&self) -> u64 {
         self.heads.iter().map(|t| t.score(&self.map)).sum()
     }

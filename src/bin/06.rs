@@ -2,14 +2,14 @@ advent_of_code::solution!(6);
 
 pub fn part_one(input: &str) -> Option<u64> {
     let map = advent_of_code::input::parse_2d_vector(input);
-    let mut pathfinder = advent_of_code::pathfinder::build_pathfinder(&map);
+    let mut pathfinder = advent_of_code::pathfinder::Pathfinder::from(&map);
     let result = pathfinder.distinct_positions();
     Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let map = advent_of_code::input::parse_2d_vector(input);
-    let mut pathfinder = advent_of_code::pathfinder::build_pathfinder(&map);
+    let mut pathfinder = advent_of_code::pathfinder::Pathfinder::from(&map);
     let result = pathfinder.distinct_obstacles();
     Some(result)
 }

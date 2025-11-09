@@ -15,16 +15,32 @@ pub enum Antinode {
     Harmonic,
 }
 
-impl Antennas {
-    pub fn from(map: &[Vec<char>]) -> Antennas {
-        let height = map.len() as isize;
-        let width = map[0].len() as isize;
-        let antennas = Antennas::find_antennas(map);
-        Antennas {
+impl From<&Vec<Vec<char>>> for Antennas {
+    fn from(value: &Vec<Vec<char>>) -> Self {
+        let height = value.len() as isize;
+        let width = value[0].len() as isize;
+        let antennas = Antennas::find_antennas(value);
+        Self {
             height,
             width,
             antennas,
         }
+    }
+}
+
+impl Antennas {
+    pub fn distinct_antinodes(&self, antinode: Antinode) -> u64 {
+        let mut antinodes: HashSet<Location> = HashSet::new();
+
+        for locations in self.antennas.values() {
+            for (idx, left) in locations.iter().enumerate() {
+                locations[idx + 1..].iter().for_each(|right| {
+                    antinodes.extend(self.calculate_antinodes(left, right, antinode))
+                });
+            }
+        }
+
+        antinodes.len() as u64
     }
 
     fn find_antennas(map: &[Vec<char>]) -> HashMap<char, Vec<Location>> {
@@ -135,19 +151,5 @@ impl Antennas {
             Antinode::Resonant => self.calculate_resonant_antinodes(left, right),
             Antinode::Harmonic => self.calculate_harmonic_antinodes(left, right),
         }
-    }
-
-    pub fn distinct_antinodes(&self, antinode: Antinode) -> u64 {
-        let mut antinodes: HashSet<Location> = HashSet::new();
-
-        for locations in self.antennas.values() {
-            for (idx, left) in locations.iter().enumerate() {
-                locations[idx + 1..].iter().for_each(|right| {
-                    antinodes.extend(self.calculate_antinodes(left, right, antinode))
-                });
-            }
-        }
-
-        antinodes.len() as u64
     }
 }

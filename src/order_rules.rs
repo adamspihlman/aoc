@@ -6,14 +6,16 @@ pub struct Rules {
     rules: HashMap<u64, HashSet<u64>>,
 }
 
-pub fn build_rules(input: Vec<(u64, u64)>) -> Rules {
-    let mut rules: HashMap<u64, HashSet<u64>> = HashMap::new();
+impl From<Vec<(u64, u64)>> for Rules {
+    fn from(value: Vec<(u64, u64)>) -> Self {
+        let mut rules: HashMap<u64, HashSet<u64>> = HashMap::new();
 
-    for (before, after) in input {
-        rules.entry(before).or_default().insert(after);
+        value.iter().for_each(|&(before, after)| {
+            rules.entry(before).or_default().insert(after);
+        });
+
+        Self { rules }
     }
-
-    Rules { rules }
 }
 
 impl Rules {

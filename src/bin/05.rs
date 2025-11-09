@@ -37,7 +37,7 @@ fn parse_input_updates(input: &str) -> Vec<Vec<u64>> {
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let rules = advent_of_code::order_rules::build_rules(parse_input_rules(input));
+    let rules = advent_of_code::order_rules::Rules::from(parse_input_rules(input));
     let updates = parse_input_updates(input);
     let sum = updates
         .into_iter()
@@ -49,7 +49,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let rules = advent_of_code::order_rules::build_rules(parse_input_rules(input));
+    let rules = advent_of_code::order_rules::Rules::from(parse_input_rules(input));
     let mut updates = parse_input_updates(input);
     updates.retain(|u| !rules.is_valid(u));
 

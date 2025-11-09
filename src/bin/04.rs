@@ -2,16 +2,18 @@ advent_of_code::solution!(4);
 
 pub fn part_one(input: &str) -> Option<u64> {
     let words =
-        advent_of_code::word_search::build_words(advent_of_code::input::parse_2d_vector(input));
+        advent_of_code::word_search::Words::from(advent_of_code::input::parse_2d_vector(input));
 
-    Some(words.word_search())
+    let result = words.word_search();
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let words =
-        advent_of_code::word_search::build_words(advent_of_code::input::parse_2d_vector(input));
+        advent_of_code::word_search::Words::from(advent_of_code::input::parse_2d_vector(input));
 
-    Some(words.x_search())
+    let result = words.x_search();
+    Some(result)
 }
 
 #[cfg(test)]

@@ -10,9 +10,9 @@ pub enum Operator {
     Concat,
 }
 
-impl Equation {
-    pub fn from(line: &str) -> Equation {
-        let mut iter = line.split(':');
+impl From<&str> for Equation {
+    fn from(value: &str) -> Self {
+        let mut iter = value.split(':');
         let result = iter.next().unwrap().parse::<u64>().unwrap();
         let terms: Vec<u64> = iter
             .next()
@@ -20,9 +20,11 @@ impl Equation {
             .split_whitespace()
             .map(|t| t.parse::<u64>().unwrap())
             .collect();
-        Equation { result, terms }
+        Self { result, terms }
     }
+}
 
+impl Equation {
     pub fn is_solvable(&self, ops: &[Operator]) -> bool {
         Equation::exists_solution(self.result, &self.terms, ops)
     }

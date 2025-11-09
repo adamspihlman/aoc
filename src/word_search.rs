@@ -1,8 +1,38 @@
+#[derive(Debug)]
 pub struct Words {
     words: Vec<Vec<char>>,
 }
 
+impl From<Vec<Vec<char>>> for Words {
+    fn from(value: Vec<Vec<char>>) -> Self {
+        Self { words: value }
+    }
+}
+
 impl Words {
+    pub fn word_search(&self) -> u64 {
+        let mut count = 0;
+        for (r, row) in self.words.iter().enumerate() {
+            for (c, &ch) in row.iter().enumerate() {
+                if ch == 'X' {
+                    count += self.count_xmas(r, c);
+                }
+            }
+        }
+        count
+    }
+    pub fn x_search(&self) -> u64 {
+        let mut count = 0;
+        for (r, row) in self.words.iter().enumerate() {
+            for (c, &ch) in row.iter().enumerate() {
+                if ch == 'A' && self.check_x_shape(r, c) {
+                    count += 1;
+                }
+            }
+        }
+        count
+    }
+
     fn count_dir(&self, row: isize, col: isize, dr: isize, dc: isize) -> bool {
         let rows = self.words.len() as isize;
         let cols = self.words[0].len() as isize;
@@ -67,31 +97,4 @@ impl Words {
             .count()
             == 2
     }
-
-    pub fn word_search(&self) -> u64 {
-        let mut count = 0;
-        for (r, row) in self.words.iter().enumerate() {
-            for (c, &ch) in row.iter().enumerate() {
-                if ch == 'X' {
-                    count += self.count_xmas(r, c);
-                }
-            }
-        }
-        count
-    }
-    pub fn x_search(&self) -> u64 {
-        let mut count = 0;
-        for (r, row) in self.words.iter().enumerate() {
-            for (c, &ch) in row.iter().enumerate() {
-                if ch == 'A' && self.check_x_shape(r, c) {
-                    count += 1;
-                }
-            }
-        }
-        count
-    }
-}
-
-pub fn build_words(words: Vec<Vec<char>>) -> Words {
-    Words { words }
 }

@@ -5,15 +5,23 @@ pub struct StoneMason {
 
 #[derive(Debug)]
 struct Stone {
-    pub value: u64,
+    value: u64,
+}
+
+impl From<Vec<u64>> for StoneMason {
+    fn from(value: Vec<u64>) -> Self {
+        let stones = value.into_iter().map(Stone::from).collect();
+        Self { stones }
+    }
+}
+
+impl From<u64> for Stone {
+    fn from(value: u64) -> Self {
+        Self { value }
+    }
 }
 
 impl StoneMason {
-    pub fn from(input: Vec<u64>) -> StoneMason {
-        let stones = input.iter().map(|&i| Stone { value: i }).collect();
-        StoneMason { stones }
-    }
-
     pub fn blink(&mut self, count: u32) {
         for _ in 0..count {
             let mut new_stones = Vec::new();
@@ -45,7 +53,7 @@ impl Stone {
                 .parse::<u64>()
                 .unwrap();
             self.value = left;
-            return Some(Stone { value: right });
+            return Some(Stone::from(right));
         }
         self.value *= 2024;
         None
