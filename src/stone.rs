@@ -3,7 +3,7 @@ pub struct StoneMason {
     stones: Vec<Stone>,
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug)]
 struct Stone {
     value: u64,
 }
@@ -22,8 +22,16 @@ impl From<u64> for Stone {
 }
 
 impl StoneMason {
-    pub fn blink(&self, count: u32) -> u64 {
-        self.stones.iter().map(|s| s.blink(count)).sum()
+    pub fn blink(&mut self, count: u32) {
+        for _ in 0..count {
+            let mut new_stones = Vec::new();
+            for stone in &mut self.stones {
+                if let Some(new_stone) = stone.transform() {
+                    new_stones.push(new_stone);
+                }
+            }
+            self.stones.extend(new_stones);
+        }
     }
 
     pub fn get_num_stones(&self) -> u64 {
@@ -32,27 +40,22 @@ impl StoneMason {
 }
 
 impl Stone {
-    pub fn blink(&self, count: u32) -> u64 {
-        Stone::compute(self.value, count)
-    }
-
-    fn compute(value: u64, count: u32) -> u64 {
-        if count == 0 {
-            return 1;
+    pub fn transform(&mut self) -> Option<Stone> {
+        if self.value == 0 {
+            self.value = 1;
+            return None;
         }
 
-        if value == 0 {
-            return Stone::compute(1, count - 1);
-        }
-
-        let value_str = value.to_string();
+        let value_str = self.value.to_string();
         if value_str.len().is_multiple_of(2) {
             let left = value_str[0..value_str.len() / 2].parse::<u64>().unwrap();
             let right = value_str[value_str.len() / 2..value_str.len()]
                 .parse::<u64>()
                 .unwrap();
-            return Stone::compute(left, count - 1) + Stone::compute(right, count - 1);
+            self.value = left;
+            return Some(Stone::from(right));
         }
-        Stone::compute(value * 2024, count - 1)
+        self.value *= 2024;
+        None
     }
 }
