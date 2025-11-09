@@ -25,6 +25,7 @@ struct Prize {
     pub y: u64,
 }
 
+#[derive(Default)]
 pub struct ClawBuilder {
     machines: Vec<Machine>,
 }
@@ -54,13 +55,13 @@ impl Machine {
             self.find_min(x + self.a.x_step, y + self.a.y_step, iterations - 1),
             self.find_min(x + self.b.x_step, y + self.b.y_step, iterations - 1),
         ) {
-            (None, None) => return None,
-            (None, Some(b_cost)) => return Some(b_cost + self.b.cost),
-            (Some(a_cost), None) => return Some(a_cost + self.a.cost),
+            (None, None) => None,
+            (None, Some(b_cost)) => Some(b_cost + self.b.cost),
+            (Some(a_cost), None) => Some(a_cost + self.a.cost),
             (Some(a_cost), Some(b_cost)) => {
                 let a_cost = a_cost + self.a.cost;
                 let b_cost = b_cost + self.b.cost;
-                return Some(std::cmp::min(a_cost, b_cost));
+                Some(std::cmp::min(a_cost, b_cost))
             }
         }
     }
@@ -75,12 +76,6 @@ enum InputType {
 }
 
 impl ClawBuilder {
-    pub fn new() -> Self {
-        Self {
-            machines: Vec::new(),
-        }
-    }
-
     pub fn machines(mut self, input: &str) -> ClawBuilder {
         let button_regex = Regex::new(r"^Button [AB]: X\+(\d+), Y\+(\d+)").unwrap();
         let prize_regex = Regex::new(r"^Prize: X=(\d+), Y=(\d+)").unwrap();

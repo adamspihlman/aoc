@@ -1,7 +1,7 @@
 advent_of_code::solution!(13);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut claw = advent_of_code::claw::ClawBuilder::new()
+    let mut claw = advent_of_code::claw::ClawBuilder::default()
         .machines(input)
         .build();
     let result = claw.min_cost();
