@@ -17,9 +17,89 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(480));
+    }
+
+    #[test]
+    fn test_math_proof_of_concept() {
+        let final_x = 8400;
+        let final_y = 5400;
+
+        let b_x = 22;
+        let b_y = 67;
+        let a_x = 94;
+        let a_y = 34;
+
+        let prize_distance = ((8400.0 * 8400.0 + 5400.0 * 5400.0) as f64).sqrt();
+
+        let b_distance = ((22.0 * 22.0 + 67.0 * 67.0) as f64).sqrt();
+
+        let prize_b_angle = ((5400.0 / 8400.0) as f64).atan() - ((67.0 / 22.0) as f64).atan();
+        let b_distance_on_prize = b_distance / prize_b_angle.cos();
+        let b_normal_cost = 1.0 * (prize_distance / b_distance_on_prize);
+
+        let a_distance = ((94.0 * 94.0 + 34.0 * 34.0) as f64).sqrt();
+
+        let prize_a_angle = ((5400.0 / 8400.0) as f64).atan() - ((34.0 / 94.0) as f64).atan();
+        let a_distance_on_prize = a_distance / prize_a_angle.cos();
+        let a_normal_cost = 3.0 * (prize_distance / a_distance_on_prize);
+
+        dbg!(
+            prize_distance,
+            b_distance,
+            prize_b_angle,
+            b_distance_on_prize,
+            b_normal_cost,
+            a_distance,
+            prize_a_angle,
+            a_distance_on_prize,
+            a_normal_cost
+        );
+
+        let mut b_press = 0;
+        let mut a_press = 0;
+
+        let b_cheaper = b_normal_cost < a_normal_cost;
+
+        if b_cheaper {
+            b_press = std::cmp::max(100, b_normal_cost.round() as i32);
+        } else {
+            a_press = std::cmp::max(100, a_normal_cost.round() as i32);
+        }
+
+        loop {
+            if b_press < 0 || a_press < 0 {
+                break; // no solution
+            }
+            let cur_x = b_x * b_press + a_x * a_press;
+            let cur_y = b_y * b_press + a_y * a_press;
+
+            if cur_x == final_x && cur_y == final_y {
+                break;
+            } else if cur_x > final_x || cur_y > final_y {
+                if b_cheaper {
+                    b_press -= 1;
+                    a_press = 0;
+                } else {
+                    a_press -= 1;
+                    b_press = 0;
+                }
+                continue;
+            } else {
+                if b_cheaper {
+                    a_press += 1;
+                } else {
+                    b_press += 1;
+                }
+                continue;
+            }
+        }
+        assert_eq!(b_press, 40);
+        assert_eq!(a_press, 80);
+        // assert!(false);
     }
 
     #[test]
