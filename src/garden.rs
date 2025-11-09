@@ -34,6 +34,20 @@ impl Garden {
         result
     }
 
+    // For part 2, we need to calculate number of corners in a region instead
+    //  of perimeter length. compute_region_price can be identical, just with
+    //  some way to express that we want to get number of corners of a given
+    //  plot in the region, instead of amount of perimeter of that plot.
+    //
+    //  There are 8 possible orientations for a corner. In 4 of them, only one
+    //    plot in the region touches the corner. In the other 4, three plots
+    //    in the region touch the corner. So, we just need to decide which of
+    //    the three plots is responsible for counting the corner in each of
+    //    those four cases. We can extend add_neighbors to do this calculation
+    //    in the case of corner pricing, and then most of the code can then be
+    //    reused.
+    //
+
     fn compute_region_price(&mut self, start: Location) -> u64 {
         let mut area = 0_u64;
         let mut perimeter = 0_u64;
