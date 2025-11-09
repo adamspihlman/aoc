@@ -19,6 +19,19 @@ pub const DIRECTIONS: [Direction; 4] = [
     Direction::Right,
 ];
 
+pub fn rotate_direction(direction: Direction) -> Direction {
+    match direction {
+        Direction::Up => Direction::Right,
+        Direction::Right => Direction::Down,
+        Direction::Down => Direction::Left,
+        Direction::Left => Direction::Up,
+    }
+}
+
+pub fn at<T: Clone>(map: &[Vec<T>], location: Location) -> T {
+    map[location.row][location.col].clone()
+}
+
 pub fn get_location<T>(
     map: &[Vec<T>],
     location: Location,

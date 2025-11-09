@@ -1,5 +1,6 @@
 use std::collections::{BTreeSet, HashSet, VecDeque};
 
+use crate::grid;
 use crate::grid::Location;
 
 #[derive(Debug)]
@@ -24,31 +25,27 @@ impl From<Vec<Vec<char>>> for Garden {
 }
 
 impl Garden {
-    pub fn get_fence_price(&mut self) -> u64 {
+    pub fn get_fence_perimeter_price(&mut self) -> u64 {
         let mut result = 0;
 
         while !self.unvisited.is_empty() {
             let start = self.unvisited.pop_first().unwrap();
-            result += self.compute_region_price(start);
+            result += self.compute_perimeter_price(start);
         }
         result
     }
 
-    // For part 2, we need to calculate number of corners in a region instead
-    //  of perimeter length. compute_region_price can be identical, just with
-    //  some way to express that we want to get number of corners of a given
-    //  plot in the region, instead of amount of perimeter of that plot.
-    //
-    //  There are 8 possible orientations for a corner. In 4 of them, only one
-    //    plot in the region touches the corner. In the other 4, three plots
-    //    in the region touch the corner. So, we just need to decide which of
-    //    the three plots is responsible for counting the corner in each of
-    //    those four cases. We can extend add_neighbors to do this calculation
-    //    in the case of corner pricing, and then most of the code can then be
-    //    reused.
-    //
+    pub fn get_fence_corner_price(&mut self) -> u64 {
+        let mut result = 0;
 
-    fn compute_region_price(&mut self, start: Location) -> u64 {
+        while !self.unvisited.is_empty() {
+            let start = self.unvisited.pop_first().unwrap();
+            result += self.compute_corner_price(start);
+        }
+        result
+    }
+
+    fn compute_perimeter_price(&mut self, start: Location) -> u64 {
         let mut area = 0_u64;
         let mut perimeter = 0_u64;
 
@@ -63,6 +60,22 @@ impl Garden {
         area * perimeter
     }
 
+    fn compute_corner_price(&mut self, start: Location) -> u64 {
+        let mut area: u64 = 0;
+        let mut corners: u64 = 0;
+
+        let mut visited = HashSet::from([start]);
+        let mut plots: VecDeque<Location> = VecDeque::from([start]);
+        while !plots.is_empty() {
+            let location = plots.pop_front().unwrap();
+            area += 1;
+            self.add_neighbors(location, &mut plots, &mut visited);
+            corners += self.count_corners(location);
+        }
+
+        area * corners
+    }
+
     fn add_neighbors(
         &mut self,
         location: Location,
@@ -71,8 +84,8 @@ impl Garden {
     ) -> u64 {
         let mut num_neighbors = 0;
 
-        crate::grid::DIRECTIONS.iter().for_each(|&d| {
-            let next = crate::grid::get_location(&self.map, location, d);
+        grid::DIRECTIONS.iter().for_each(|&d| {
+            let next = grid::get_location(&self.map, location, d);
             if let Some(next) = next {
                 if self.map[location.row][location.col] == self.map[next.row][next.col] {
                     num_neighbors += 1;
@@ -85,5 +98,50 @@ impl Garden {
             }
         });
         num_neighbors
+    }
+
+    fn count_corners_at(&self, location: Location, first_direction: grid::Direction) -> u64 {
+        let mut num_corners = 0_u64;
+        let plot = grid::at(&self.map, location);
+        let second_direction = grid::rotate_direction(first_direction);
+
+        let first_location = grid::get_location(&self.map, location, first_direction);
+        let second_location = grid::get_location(&self.map, location, second_direction);
+
+        match (first_location, second_location) {
+            (None, None) => num_corners += 1,
+            (Some(first_location), None) => {
+                if grid::at(&self.map, first_location) != plot {
+                    num_corners += 1;
+                }
+            }
+            (None, Some(second_location)) => {
+                if grid::at(&self.map, second_location) != plot {
+                    num_corners += 1;
+                }
+            }
+            (Some(first_location), Some(second_location)) => {
+                let first_plot = grid::at(&self.map, first_location);
+                let second_plot = grid::at(&self.map, second_location);
+
+                if first_plot != plot && second_plot != plot {
+                    num_corners += 1;
+                } else if first_plot == plot && second_plot == plot {
+                    let diagonal_location =
+                        grid::get_location(&self.map, first_location, second_direction).unwrap();
+                    if grid::at(&self.map, diagonal_location) != plot {
+                        num_corners += 1;
+                    }
+                }
+            }
+        }
+        num_corners
+    }
+
+    fn count_corners(&self, location: Location) -> u64 {
+        grid::DIRECTIONS
+            .iter()
+            .map(|&d| self.count_corners_at(location, d))
+            .sum()
     }
 }

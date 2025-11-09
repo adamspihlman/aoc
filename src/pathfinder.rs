@@ -58,7 +58,7 @@ impl Pathfinder<'_> {
                 }
 
                 if self.is_obstacle(&potential_next) {
-                    self.rotate_direction();
+                    self.direction = crate::grid::rotate_direction(self.direction);
                 } else {
                     self.location = potential_next;
                 }
@@ -86,7 +86,7 @@ impl Pathfinder<'_> {
         while !self.is_path_end() {
             let potential_next = self.get_next_location();
             if self.is_obstacle(&potential_next) {
-                self.rotate_direction();
+                self.direction = crate::grid::rotate_direction(self.direction);
             } else {
                 self.location = potential_next;
             }
@@ -182,14 +182,5 @@ impl Pathfinder<'_> {
                 Some(loc) => loc == *location,
                 None => false,
             }
-    }
-
-    fn rotate_direction(&mut self) {
-        self.direction = match self.direction {
-            Direction::Up => Direction::Right,
-            Direction::Right => Direction::Down,
-            Direction::Down => Direction::Left,
-            Direction::Left => Direction::Up,
-        };
     }
 }
