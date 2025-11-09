@@ -1,6 +1,7 @@
 pub mod antennas;
 pub mod disk;
 pub mod equation;
+pub mod garden;
 pub mod grid;
 pub mod input;
 pub mod order_rules;

@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::grid::{self, Direction, Location};
+use crate::grid::{self, Location};
 
 #[derive(Debug)]
 pub struct Topograph {
@@ -56,38 +56,6 @@ impl Trailhead {
         Trailhead::get_rating(map, 0, self.start)
     }
 
-    fn get_location(
-        map: &[Vec<u32>],
-        location: Location,
-        direction: Direction,
-    ) -> Option<Location> {
-        let mut row = location.row as isize;
-        let mut col = location.col as isize;
-
-        match direction {
-            Direction::Up => {
-                row -= 1;
-            }
-            Direction::Down => {
-                row += 1;
-            }
-            Direction::Left => {
-                col -= 1;
-            }
-            Direction::Right => {
-                col += 1;
-            }
-        }
-        if row < 0 || row >= map.len() as isize || col < 0 || col >= map[0].len() as isize {
-            return None;
-        }
-        let result = Location {
-            row: row as usize,
-            col: col as usize,
-        };
-        Some(result)
-    }
-
     fn get_rating(map: &[Vec<u32>], altitude: u32, location: Location) -> u64 {
         if altitude != map[location.row][location.col] {
             return 0;
@@ -99,17 +67,10 @@ impl Trailhead {
 
         let next_altitude = altitude + 1;
 
-        let directions = [
-            Direction::Up,
-            Direction::Down,
-            Direction::Left,
-            Direction::Right,
-        ];
-
-        directions
+        crate::grid::DIRECTIONS
             .iter()
             .map(|&d| {
-                let next = Trailhead::get_location(map, location, d);
+                let next = crate::grid::get_location(map, location, d);
                 if let Some(next_location) = next {
                     return Trailhead::get_rating(map, next_altitude, next_location);
                 }
@@ -135,15 +96,8 @@ impl Trailhead {
 
         let next_altitude = altitude + 1;
 
-        let directions = [
-            Direction::Up,
-            Direction::Down,
-            Direction::Left,
-            Direction::Right,
-        ];
-
-        directions.iter().for_each(|&d| {
-            let next = Trailhead::get_location(map, location, d);
+        crate::grid::DIRECTIONS.iter().for_each(|&d| {
+            let next = crate::grid::get_location(map, location, d);
             if let Some(next_location) = next {
                 Trailhead::get_peaks(map, peaks, next_altitude, next_location);
             }
