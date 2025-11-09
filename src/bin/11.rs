@@ -17,8 +17,14 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let stones = parse_input(input);
+    let mut stonemason = advent_of_code::stone::StoneMason::from(stones);
+
+    stonemason.blink(75);
+
+    let result = stonemason.get_num_stones();
+    Some(result)
 }
 
 #[cfg(test)]
@@ -38,9 +44,8 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(220377651399268));
     }
 }

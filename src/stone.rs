@@ -1,16 +1,21 @@
-#[derive(Debug)]
-pub struct StoneMason {
-    stones: Vec<Stone>,
-}
+use std::collections::HashMap;
 
 #[derive(Debug)]
+pub struct StoneMason {
+    stones: HashMap<Stone, u64>,
+}
+
+#[derive(Debug, Copy, Hash, PartialEq, Eq, Clone)]
 struct Stone {
     value: u64,
 }
 
 impl From<Vec<u64>> for StoneMason {
     fn from(value: Vec<u64>) -> Self {
-        let stones = value.into_iter().map(Stone::from).collect();
+        let mut stones = HashMap::new();
+        value.into_iter().map(Stone::from).for_each(|s| {
+            stones.entry(s).and_modify(|count| *count += 1).or_insert(1);
+        });
         Self { stones }
     }
 }
@@ -24,18 +29,26 @@ impl From<u64> for Stone {
 impl StoneMason {
     pub fn blink(&mut self, count: u32) {
         for _ in 0..count {
-            let mut new_stones = Vec::new();
-            for stone in &mut self.stones {
+            let mut next_stones: HashMap<Stone, u64> = HashMap::new();
+            for (stone, amount) in &self.stones {
+                let mut stone = *stone;
                 if let Some(new_stone) = stone.transform() {
-                    new_stones.push(new_stone);
+                    next_stones
+                        .entry(new_stone)
+                        .and_modify(|c| *c += amount)
+                        .or_insert(*amount);
                 }
+                next_stones
+                    .entry(stone)
+                    .and_modify(|c| *c += amount)
+                    .or_insert(*amount);
             }
-            self.stones.extend(new_stones);
+            self.stones = next_stones;
         }
     }
 
     pub fn get_num_stones(&self) -> u64 {
-        self.stones.len() as u64
+        self.stones.values().sum()
     }
 }
 
