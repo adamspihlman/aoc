@@ -17,7 +17,6 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(480));
@@ -30,11 +29,13 @@ mod tests {
         let final_x_f = final_x as f64;
         let final_y_f = final_y as f64;
 
+        let b_cost: f64 = 1.0;
         let b_x = 22;
         let b_y = 67;
         let b_x_f = b_x as f64;
         let b_y_f = b_y as f64;
 
+        let a_cost: f64 = 3.0;
         let a_x = 94;
         let a_y = 34;
         let a_x_f = a_x as f64;
@@ -46,13 +47,13 @@ mod tests {
 
         let prize_b_angle = (final_y_f / final_x_f).atan() - (b_y_f / b_x_f).atan();
         let b_distance_on_prize = b_distance / prize_b_angle.cos();
-        let b_normal_cost = 1.0 * (prize_distance / b_distance_on_prize);
+        let b_normal_cost = b_cost * (prize_distance / b_distance_on_prize);
 
         let a_distance = (a_x_f.powi(2) + a_y_f.powi(2)).sqrt();
 
         let prize_a_angle = (final_y_f / final_x_f).atan() - (a_y_f / a_x_f).atan();
         let a_distance_on_prize = a_distance / prize_a_angle.cos();
-        let a_normal_cost = 3.0 * (prize_distance / a_distance_on_prize);
+        let a_normal_cost = a_cost * (prize_distance / a_distance_on_prize);
 
         let mut b_press = 0;
         let mut a_press = 0;
@@ -67,7 +68,7 @@ mod tests {
 
         loop {
             if b_press < 0 || a_press < 0 {
-                break; // no solution
+                break;
             }
             let cur_x = b_x * b_press + a_x * a_press;
             let cur_y = b_y * b_press + a_y * a_press;
@@ -94,18 +95,6 @@ mod tests {
         }
         assert_eq!(b_press, 40);
         assert_eq!(a_press, 80);
-        // assert!(false);
-        // dbg!(
-        //     prize_distance,
-        //     b_distance,
-        //     prize_b_angle,
-        //     b_distance_on_prize,
-        //     b_normal_cost,
-        //     a_distance,
-        //     prize_a_angle,
-        //     a_distance_on_prize,
-        //     a_normal_cost
-        // );
     }
 
     #[test]
@@ -113,5 +102,11 @@ mod tests {
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_part_one_solution() {
+        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(36954));
     }
 }
