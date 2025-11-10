@@ -1,3 +1,5 @@
+use std::{sync::mpsc, thread};
+
 use regex::Regex;
 
 #[derive(Debug)]
@@ -37,7 +39,18 @@ pub struct ClawBuilder {
 
 impl Claw {
     pub fn min_cost(&mut self) -> u64 {
-        self.machines.iter_mut().map(|m| m.min_cost()).sum()
+        thread::scope(|s| {
+            let (tx, rx) = mpsc::channel();
+            while let Some(mut machine) = self.machines.pop() {
+                let tx_clone = tx.clone();
+                s.spawn(move || {
+                    let min_cost = machine.min_cost();
+                    tx_clone.send(min_cost).unwrap();
+                });
+            }
+            drop(tx);
+            rx.iter().sum::<u64>()
+        })
     }
 }
 
@@ -56,7 +69,6 @@ impl Machine {
     }
 
     pub fn min_cost(&mut self) -> u64 {
-        // println!("Finding min cost for machine {:?}", self);
         let prize_distance = (self.prize.x_f.powi(2) + self.prize.y_f.powi(2)).sqrt();
 
         let b_distance = (self.b.x_f.powi(2) + self.b.y_f.powi(2)).sqrt();
@@ -73,58 +85,40 @@ impl Machine {
         let a_distance_on_prize = a_distance / prize_a_angle.cos();
         let a_normal_cost = self.a.cost * (prize_distance / a_distance_on_prize);
 
-        let mut b_press: i64 = 0;
-        let mut a_press: i64 = 0;
-
         let b_cheaper = b_normal_cost < a_normal_cost;
-
-        if b_cheaper {
-            b_press = Machine::get_max_presses(&self.b, &self.prize);
+        let (cheap, expensive) = if b_cheaper {
+            (&self.b, &self.a)
         } else {
-            a_press = Machine::get_max_presses(&self.a, &self.prize);
-        }
+            (&self.a, &self.b)
+        };
+
+        let mut cheap_press = Machine::get_max_presses(cheap, &self.prize);
+        let mut expensive_press = 0;
 
         loop {
-            if b_press < 0 || a_press < 0 {
-                // println!("Found no result for machine {:?}", self);
+            if cheap_press < 0 || expensive_press < 0 {
                 return 0;
             }
-            let cur_x = self.b.x * b_press as u64 + self.a.x * a_press as u64;
-            let cur_y = self.b.y * b_press as u64 + self.a.y * a_press as u64;
-            // dbg!(cur_x, cur_y, b_press, a_press, self.prize.x, self.prize.y);
 
-            if b_cheaper {
-                let remaining_x = self.prize.x - cur_x;
-                let remaining_y = self.prize.y - cur_y;
-                if remaining_x.is_multiple_of(self.a.x)
-                    && remaining_y.is_multiple_of(self.a.y)
-                    && remaining_x / self.a.x == remaining_y / self.a.y
-                {
-                    a_press = (remaining_x / self.a.x) as i64;
-                    break;
-                } else {
-                    b_press -= 1;
-                    a_press = 0;
-                }
+            let cur_x = cheap.x * cheap_press as u64 + expensive.x * expensive_press as u64;
+            let cur_y = cheap.y * cheap_press as u64 + expensive.y * expensive_press as u64;
+
+            let remaining_x = self.prize.x - cur_x;
+            let remaining_y = self.prize.y - cur_y;
+
+            if remaining_x.is_multiple_of(expensive.x)
+                && remaining_y.is_multiple_of(expensive.y)
+                && remaining_x / expensive.x == remaining_y / expensive.y
+            {
+                expensive_press = (remaining_x / expensive.x) as i64;
+                break;
             } else {
-                let remaining_x = self.prize.x - cur_x;
-                let remaining_y = self.prize.y - cur_y;
-                if remaining_x.is_multiple_of(self.b.x)
-                    && remaining_y.is_multiple_of(self.b.y)
-                    && remaining_x / self.b.x == remaining_y / self.b.y
-                {
-                    b_press = (remaining_x / self.b.x) as i64;
-                    break;
-                } else {
-                    a_press -= 1;
-                    b_press = 0;
-                }
+                cheap_press -= 1;
+                expensive_press = 0;
             }
         }
 
-        let result = self.b.cost as u64 * b_press as u64 + self.a.cost as u64 * a_press as u64;
-        // println!("Found result {result} for machine {:?}", self);
-        result
+        cheap.cost as u64 * cheap_press as u64 + expensive.cost as u64 * expensive_press as u64
     }
 }
 
