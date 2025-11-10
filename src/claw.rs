@@ -1,5 +1,3 @@
-use std::{sync::mpsc, thread};
-
 use regex::Regex;
 
 #[derive(Debug)]
@@ -16,19 +14,15 @@ struct Machine {
 
 #[derive(Debug, Copy, Clone)]
 struct Button {
-    pub cost: f64,
+    pub cost: u64,
     pub x: u64,
-    pub x_f: f64,
     pub y: u64,
-    pub y_f: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
 struct Prize {
     pub x: u64,
-    pub x_f: f64,
     pub y: u64,
-    pub y_f: f64,
 }
 
 #[derive(Default)]
@@ -38,87 +32,52 @@ pub struct ClawBuilder {
 }
 
 impl Claw {
-    pub fn min_cost(&mut self) -> u64 {
-        thread::scope(|s| {
-            let (tx, rx) = mpsc::channel();
-            while let Some(mut machine) = self.machines.pop() {
-                let tx_clone = tx.clone();
-                s.spawn(move || {
-                    let min_cost = machine.min_cost();
-                    tx_clone.send(min_cost).unwrap();
-                });
-            }
-            drop(tx);
-            rx.iter().sum::<u64>()
-        })
+    pub fn min_cost(&self) -> u64 {
+        self.machines.iter().map(|m| m.min_cost()).sum()
     }
 }
 
 impl Machine {
-    fn get_max_presses(button: &Button, prize: &Prize) -> i64 {
-        let x_multiple = prize.x / button.x;
-        let y_multiple = prize.y / button.y;
+    pub fn min_cost(&self) -> u64 {
+        let b_numerator = self.get_b_numerator();
+        let b_denominator = self.get_b_denominator();
 
-        if prize.x.is_multiple_of(button.x)
-            && prize.y.is_multiple_of(button.y)
-            && x_multiple == y_multiple
-        {
-            return x_multiple as i64;
+        if !b_numerator.is_multiple_of(b_denominator) {
+            return 0;
         }
-        std::cmp::min(x_multiple, y_multiple) as i64
+
+        let b_press = b_numerator / b_denominator;
+
+        let a_numerator = self.get_a_numerator(b_press);
+        let a_denominator = self.a.y;
+
+        if !a_numerator.is_multiple_of(a_denominator) {
+            return 0;
+        }
+        let a_press = a_numerator / a_denominator;
+
+        a_press * self.a.cost + b_press * self.b.cost
     }
 
-    pub fn min_cost(&mut self) -> u64 {
-        let prize_distance = (self.prize.x_f.powi(2) + self.prize.y_f.powi(2)).sqrt();
+    fn get_b_numerator(&self) -> u64 {
+        let first = self.prize.x * self.a.y;
+        let second = self.prize.y * self.a.x;
 
-        let b_distance = (self.b.x_f.powi(2) + self.b.y_f.powi(2)).sqrt();
+        first.abs_diff(second)
+    }
 
-        let prize_b_angle =
-            (self.prize.y_f / self.prize.x_f).atan() - (self.b.y_f / self.b.x_f).atan();
-        let b_distance_on_prize = b_distance / prize_b_angle.cos();
-        let b_normal_cost = self.b.cost * (prize_distance / b_distance_on_prize);
+    fn get_b_denominator(&self) -> u64 {
+        let first = self.a.y * self.b.x;
+        let second = self.a.x * self.b.y;
 
-        let a_distance = (self.a.x_f.powi(2) + self.a.y_f.powi(2)).sqrt();
+        first.abs_diff(second)
+    }
 
-        let prize_a_angle =
-            (self.prize.y_f / self.prize.x_f).atan() - (self.a.y_f / self.a.x_f).atan();
-        let a_distance_on_prize = a_distance / prize_a_angle.cos();
-        let a_normal_cost = self.a.cost * (prize_distance / a_distance_on_prize);
+    fn get_a_numerator(&self, b_press: u64) -> u64 {
+        let first = self.prize.y;
+        let second = b_press * self.b.y;
 
-        let b_cheaper = b_normal_cost < a_normal_cost;
-        let (cheap, expensive) = if b_cheaper {
-            (&self.b, &self.a)
-        } else {
-            (&self.a, &self.b)
-        };
-
-        let mut cheap_press = Machine::get_max_presses(cheap, &self.prize);
-        let mut expensive_press = 0;
-
-        loop {
-            if cheap_press < 0 || expensive_press < 0 {
-                return 0;
-            }
-
-            let cur_x = cheap.x * cheap_press as u64 + expensive.x * expensive_press as u64;
-            let cur_y = cheap.y * cheap_press as u64 + expensive.y * expensive_press as u64;
-
-            let remaining_x = self.prize.x - cur_x;
-            let remaining_y = self.prize.y - cur_y;
-
-            if remaining_x.is_multiple_of(expensive.x)
-                && remaining_y.is_multiple_of(expensive.y)
-                && remaining_x / expensive.x == remaining_y / expensive.y
-            {
-                expensive_press = (remaining_x / expensive.x) as i64;
-                break;
-            } else {
-                cheap_press -= 1;
-                expensive_press = 0;
-            }
-        }
-
-        cheap.cost as u64 * cheap_press as u64 + expensive.cost as u64 * expensive_press as u64
+        first.abs_diff(second)
     }
 }
 
@@ -143,11 +102,9 @@ impl ClawBuilder {
         let mut machines = Vec::new();
         let mut input_type = InputType::AButton;
         let mut a_button = Button {
-            cost: 0.0,
+            cost: 0,
             x: 0,
-            x_f: 0.0,
             y: 0,
-            y_f: 0.0,
         };
         let mut b_button = a_button;
 
@@ -183,8 +140,8 @@ impl ClawBuilder {
         }
     }
 
-    const A_COST: f64 = 3.0;
-    const B_COST: f64 = 1.0;
+    const A_COST: u64 = 3;
+    const B_COST: u64 = 1;
 
     fn next(input_type: InputType) -> InputType {
         match input_type {
@@ -195,17 +152,11 @@ impl ClawBuilder {
         }
     }
 
-    fn create_button(line: &str, re: &Regex, cost: f64) -> Button {
+    fn create_button(line: &str, re: &Regex, cost: u64) -> Button {
         let (_, [x, y]) = re.captures_iter(line).next().unwrap().extract();
         let x = x.parse::<u64>().unwrap();
         let y = y.parse::<u64>().unwrap();
-        Button {
-            cost,
-            x,
-            x_f: x as f64,
-            y,
-            y_f: y as f64,
-        }
+        Button { cost, x, y }
     }
 
     fn create_prize(line: &str, re: &Regex, prize_offset: u64) -> Prize {
@@ -213,11 +164,6 @@ impl ClawBuilder {
         let x = x.parse::<u64>().unwrap() + prize_offset;
         let y = y.parse::<u64>().unwrap() + prize_offset;
 
-        Prize {
-            x,
-            x_f: x as f64,
-            y,
-            y_f: y as f64,
-        }
+        Prize { x, y }
     }
 }

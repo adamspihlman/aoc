@@ -1,7 +1,7 @@
 advent_of_code::solution!(13);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut claw = advent_of_code::claw::ClawBuilder::default()
+    let claw = advent_of_code::claw::ClawBuilder::default()
         .machines(input)
         .build();
     let result = claw.min_cost();
@@ -10,7 +10,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 
 pub fn part_two(input: &str) -> Option<u64> {
     let prize_offset = 10000000000000;
-    let mut claw = advent_of_code::claw::ClawBuilder::default()
+    let claw = advent_of_code::claw::ClawBuilder::default()
         .prize_offset(prize_offset)
         .machines(input)
         .build();
@@ -103,10 +103,9 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(79352015273424));
     }
 
     #[test]
