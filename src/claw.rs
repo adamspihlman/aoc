@@ -42,6 +42,19 @@ impl Claw {
 }
 
 impl Machine {
+    fn get_max_presses(button: &Button, prize: &Prize) -> i64 {
+        let x_multiple = prize.x / button.x;
+        let y_multiple = prize.y / button.y;
+
+        if prize.x.is_multiple_of(button.x)
+            && prize.y.is_multiple_of(button.y)
+            && x_multiple == y_multiple
+        {
+            return x_multiple as i64;
+        }
+        std::cmp::min(x_multiple, y_multiple) as i64
+    }
+
     pub fn min_cost(&mut self) -> u64 {
         // println!("Finding min cost for machine {:?}", self);
         let prize_distance = (self.prize.x_f.powi(2) + self.prize.y_f.powi(2)).sqrt();
@@ -66,9 +79,9 @@ impl Machine {
         let b_cheaper = b_normal_cost < a_normal_cost;
 
         if b_cheaper {
-            b_press = b_normal_cost.round() as i64;
+            b_press = Machine::get_max_presses(&self.b, &self.prize);
         } else {
-            a_press = a_normal_cost.round() as i64;
+            a_press = Machine::get_max_presses(&self.a, &self.prize);
         }
 
         loop {
@@ -78,46 +91,34 @@ impl Machine {
             }
             let cur_x = self.b.x * b_press as u64 + self.a.x * a_press as u64;
             let cur_y = self.b.y * b_press as u64 + self.a.y * a_press as u64;
+            // dbg!(cur_x, cur_y, b_press, a_press, self.prize.x, self.prize.y);
 
-            if cur_x == self.prize.x && cur_y == self.prize.y {
-                break;
-            } else if cur_x > self.prize.x || cur_y > self.prize.y {
-                if b_cheaper {
+            if b_cheaper {
+                let remaining_x = self.prize.x - cur_x;
+                let remaining_y = self.prize.y - cur_y;
+                if remaining_x.is_multiple_of(self.a.x)
+                    && remaining_y.is_multiple_of(self.a.y)
+                    && remaining_x / self.a.x == remaining_y / self.a.y
+                {
+                    a_press = (remaining_x / self.a.x) as i64;
+                    break;
+                } else {
                     b_press -= 1;
                     a_press = 0;
+                }
+            } else {
+                let remaining_x = self.prize.x - cur_x;
+                let remaining_y = self.prize.y - cur_y;
+                if remaining_x.is_multiple_of(self.b.x)
+                    && remaining_y.is_multiple_of(self.b.y)
+                    && remaining_x / self.b.x == remaining_y / self.b.y
+                {
+                    b_press = (remaining_x / self.b.x) as i64;
+                    break;
                 } else {
                     a_press -= 1;
                     b_press = 0;
                 }
-                continue;
-            } else {
-                if b_cheaper {
-                    let remaining_x = self.prize.x - cur_x;
-                    let remaining_y = self.prize.y - cur_y;
-                    if remaining_x.is_multiple_of(self.a.x)
-                        && remaining_y.is_multiple_of(self.a.y)
-                        && remaining_x / self.a.x == remaining_y / self.a.y
-                    {
-                        a_press = (remaining_x / self.a.x) as i64;
-                    } else {
-                        b_press -= 1;
-                        a_press = 0;
-                    }
-                } else {
-                    let remaining_x = self.prize.x - cur_x;
-                    let remaining_y = self.prize.y - cur_y;
-                    if remaining_x.is_multiple_of(self.b.x)
-                        && remaining_y.is_multiple_of(self.b.y)
-                        && remaining_x / self.b.x == remaining_y / self.b.y
-                    {
-                        b_press = (remaining_x / self.b.x) as i64;
-                    } else {
-                        a_press -= 1;
-                        b_press = 0;
-                    }
-                    // b_press += 1;
-                }
-                continue;
             }
         }
 

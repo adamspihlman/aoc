@@ -14,7 +14,6 @@ pub fn part_two(input: &str) -> Option<u64> {
         .prize_offset(prize_offset)
         .machines(input)
         .build();
-    return None;
     let result = claw.min_cost();
     Some(result)
 }
