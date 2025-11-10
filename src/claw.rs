@@ -32,6 +32,7 @@ struct Prize {
 #[derive(Default)]
 pub struct ClawBuilder {
     machines: Vec<Machine>,
+    prize_offset: u64,
 }
 
 impl Claw {
@@ -42,6 +43,7 @@ impl Claw {
 
 impl Machine {
     pub fn min_cost(&mut self) -> u64 {
+        // println!("Finding min cost for machine {:?}", self);
         let prize_distance = (self.prize.x_f.powi(2) + self.prize.y_f.powi(2)).sqrt();
 
         let b_distance = (self.b.x_f.powi(2) + self.b.y_f.powi(2)).sqrt();
@@ -58,19 +60,20 @@ impl Machine {
         let a_distance_on_prize = a_distance / prize_a_angle.cos();
         let a_normal_cost = self.a.cost * (prize_distance / a_distance_on_prize);
 
-        let mut b_press = 0;
-        let mut a_press = 0;
+        let mut b_press: i64 = 0;
+        let mut a_press: i64 = 0;
 
         let b_cheaper = b_normal_cost < a_normal_cost;
 
         if b_cheaper {
-            b_press = std::cmp::min(100, b_normal_cost.round() as i32);
+            b_press = b_normal_cost.round() as i64;
         } else {
-            a_press = std::cmp::min(100, a_normal_cost.round() as i32);
+            a_press = a_normal_cost.round() as i64;
         }
 
         loop {
             if b_press < 0 || a_press < 0 {
+                // println!("Found no result for machine {:?}", self);
                 return 0;
             }
             let cur_x = self.b.x * b_press as u64 + self.a.x * a_press as u64;
@@ -89,15 +92,38 @@ impl Machine {
                 continue;
             } else {
                 if b_cheaper {
-                    a_press += 1;
+                    let remaining_x = self.prize.x - cur_x;
+                    let remaining_y = self.prize.y - cur_y;
+                    if remaining_x.is_multiple_of(self.a.x)
+                        && remaining_y.is_multiple_of(self.a.y)
+                        && remaining_x / self.a.x == remaining_y / self.a.y
+                    {
+                        a_press = (remaining_x / self.a.x) as i64;
+                    } else {
+                        b_press -= 1;
+                        a_press = 0;
+                    }
                 } else {
-                    b_press += 1;
+                    let remaining_x = self.prize.x - cur_x;
+                    let remaining_y = self.prize.y - cur_y;
+                    if remaining_x.is_multiple_of(self.b.x)
+                        && remaining_y.is_multiple_of(self.b.y)
+                        && remaining_x / self.b.x == remaining_y / self.b.y
+                    {
+                        b_press = (remaining_x / self.b.x) as i64;
+                    } else {
+                        a_press -= 1;
+                        b_press = 0;
+                    }
+                    // b_press += 1;
                 }
                 continue;
             }
         }
 
-        self.b.cost as u64 * b_press as u64 + self.a.cost as u64 * a_press as u64
+        let result = self.b.cost as u64 * b_press as u64 + self.a.cost as u64 * a_press as u64;
+        // println!("Found result {result} for machine {:?}", self);
+        result
     }
 }
 
@@ -110,6 +136,11 @@ enum InputType {
 }
 
 impl ClawBuilder {
+    pub fn prize_offset(mut self, prize_offset: u64) -> ClawBuilder {
+        self.prize_offset = prize_offset;
+        self
+    }
+
     pub fn machines(mut self, input: &str) -> ClawBuilder {
         let button_regex = Regex::new(r"^Button [AB]: X\+(\d+), Y\+(\d+)").unwrap();
         let prize_regex = Regex::new(r"^Prize: X=(\d+), Y=(\d+)").unwrap();
@@ -134,7 +165,7 @@ impl ClawBuilder {
                     b_button = ClawBuilder::create_button(line, &button_regex, ClawBuilder::B_COST)
                 }
                 InputType::Prize => {
-                    let prize = ClawBuilder::create_prize(line, &prize_regex);
+                    let prize = ClawBuilder::create_prize(line, &prize_regex, self.prize_offset);
                     let machine = Machine {
                         a: a_button,
                         b: b_button,
@@ -182,10 +213,10 @@ impl ClawBuilder {
         }
     }
 
-    fn create_prize(line: &str, re: &Regex) -> Prize {
+    fn create_prize(line: &str, re: &Regex, prize_offset: u64) -> Prize {
         let (_, [x, y]) = re.captures_iter(line).next().unwrap().extract();
-        let x = x.parse::<u64>().unwrap();
-        let y = y.parse::<u64>().unwrap();
+        let x = x.parse::<u64>().unwrap() + prize_offset;
+        let y = y.parse::<u64>().unwrap() + prize_offset;
 
         Prize {
             x,

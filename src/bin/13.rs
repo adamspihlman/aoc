@@ -8,8 +8,15 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let prize_offset = 10000000000000;
+    let mut claw = advent_of_code::claw::ClawBuilder::default()
+        .prize_offset(prize_offset)
+        .machines(input)
+        .build();
+    return None;
+    let result = claw.min_cost();
+    Some(result)
 }
 
 #[cfg(test)]
@@ -28,7 +35,6 @@ mod tests {
         let final_y = 5400;
         let final_x_f = final_x as f64;
         let final_y_f = final_y as f64;
-
         let b_cost: f64 = 1.0;
         let b_x = 22;
         let b_y = 67;
@@ -61,9 +67,9 @@ mod tests {
         let b_cheaper = b_normal_cost < a_normal_cost;
 
         if b_cheaper {
-            b_press = std::cmp::min(100, b_normal_cost.round() as i32);
+            b_press = b_normal_cost.round() as i32;
         } else {
-            a_press = std::cmp::min(100, a_normal_cost.round() as i32);
+            a_press = a_normal_cost.round() as i32;
         }
 
         loop {
