@@ -61,9 +61,9 @@ mod tests {
         let b_cheaper = b_normal_cost < a_normal_cost;
 
         if b_cheaper {
-            b_press = std::cmp::max(100, b_normal_cost.round() as i32);
+            b_press = std::cmp::min(100, b_normal_cost.round() as i32);
         } else {
-            a_press = std::cmp::max(100, a_normal_cost.round() as i32);
+            a_press = std::cmp::min(100, a_normal_cost.round() as i32);
         }
 
         loop {
