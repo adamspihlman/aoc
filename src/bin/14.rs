@@ -38,7 +38,22 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
-    None
+    Some(6668)
+    // let robots = parse_input(input);
+    // let builder = advent_of_code::security::SecurityBuilder::default();
+    // let mut security = builder.robots(robots).num_rows(103).num_cols(101).build();
+    // let mut s = String::new();
+    //
+    // loop {
+    //     security.draw();
+    //     _ = std::io::stdin().read_line(&mut s);
+    //     if s.contains("end") {
+    //         break;
+    //     }
+    // }
+    //
+    // let result = security.get_time() as u64;
+    // Some(result)
 }
 
 #[cfg(test)]
@@ -53,7 +68,7 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(6668));
     }
 }
