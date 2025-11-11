@@ -8,16 +8,19 @@ fn parse_input(input: &str) -> (Vec<Vec<char>>, Vec<grid::Direction>) {
 
     let mut steps = input[map_end..input.len()].to_string();
     steps.retain(|c| !c.is_whitespace());
-    let steps: Vec<grid::Direction> = steps.chars().map(|c| grid::to_direction(c)).collect();
+    let steps: Vec<grid::Direction> = steps.chars().map(grid::to_direction).collect();
 
     (map, steps)
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let (map, steps) = parse_input(input);
-    grid::print_map(&map);
-    dbg!(steps);
-    None
+    let (warehouse, robot_steps) = parse_input(input);
+    let mut lanternfish = advent_of_code::lanternfish::Lanternfish::from(warehouse);
+
+    robot_steps.iter().for_each(|&d| lanternfish.move_robot(d));
+    let result = lanternfish.gps_sum();
+
+    Some(result)
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
@@ -29,19 +32,23 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(10092));
     }
 
     #[test]
-    #[ignore]
     fn test_part_one_simple() {
         let result = part_one(&advent_of_code::template::read_file_part(
             "examples", DAY, 2,
         ));
         assert_eq!(result, Some(2028));
+    }
+
+    #[test]
+    fn test_part_one_solution() {
+        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(1349898));
     }
 
     #[test]
