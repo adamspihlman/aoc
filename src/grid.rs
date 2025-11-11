@@ -19,6 +19,23 @@ pub const DIRECTIONS: [Direction; 4] = [
     Direction::Right,
 ];
 
+pub fn print_map(map: &[Vec<char>]) {
+    for row in map.iter() {
+        let cols: String = row.iter().collect();
+        println!("{cols}");
+    }
+}
+
+pub fn to_direction(c: char) -> Direction {
+    match c {
+        '^' => Direction::Up,
+        'v' => Direction::Down,
+        '>' => Direction::Right,
+        '<' => Direction::Left,
+        _ => panic!("Character {c} is not a direction!"),
+    }
+}
+
 pub fn rotate_direction(direction: Direction) -> Direction {
     match direction {
         Direction::Up => Direction::Right,

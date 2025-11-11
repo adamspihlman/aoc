@@ -80,10 +80,7 @@ impl Security {
         let metrics = pattern_metrics::PatternMetrics::from(&map);
         let score = metrics.pattern_score();
         println!("t = {} seconds, score = {score}", self.time);
-        for row in map.iter() {
-            let cols: String = row.iter().collect();
-            println!("{cols}");
-        }
+        grid::print_map(&map);
     }
 
     fn create_map(&self) -> Vec<Vec<char>> {

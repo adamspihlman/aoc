@@ -5,6 +5,7 @@ pub mod equation;
 pub mod garden;
 pub mod grid;
 pub mod input;
+pub mod lanternfish;
 pub mod order_rules;
 pub mod pathfinder;
 pub mod pattern_metrics;
