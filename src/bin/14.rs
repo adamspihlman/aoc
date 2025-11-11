@@ -37,23 +37,14 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    Some(6668)
-    // let robots = parse_input(input);
-    // let builder = advent_of_code::security::SecurityBuilder::default();
-    // let mut security = builder.robots(robots).num_rows(103).num_cols(101).build();
-    // let mut s = String::new();
-    //
-    // loop {
-    //     security.draw();
-    //     _ = std::io::stdin().read_line(&mut s);
-    //     if s.contains("end") {
-    //         break;
-    //     }
-    // }
-    //
-    // let result = security.get_time() as u64;
-    // Some(result)
+pub fn part_two(input: &str) -> Option<u64> {
+    let robots = parse_input(input);
+    let builder = advent_of_code::security::SecurityBuilder::default();
+    let mut security = builder.robots(robots).num_rows(103).num_cols(101).build();
+    let result = security.find_image();
+    // security.draw(); // uncomment to see the image!
+
+    Some(result)
 }
 
 #[cfg(test)]
