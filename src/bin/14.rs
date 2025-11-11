@@ -30,9 +30,11 @@ fn parse_input(input: &str) -> Vec<advent_of_code::security::Robot> {
 pub fn part_one(input: &str) -> Option<u64> {
     let robots = parse_input(input);
     let builder = advent_of_code::security::SecurityBuilder::default();
-    let security = builder.robots(robots).num_rows(7).num_cols(11).build();
-    dbg!(security);
-    None
+    let mut security = builder.robots(robots).num_rows(103).num_cols(101).build();
+    security.elapse(100);
+    let result = security.safety_factor();
+
+    Some(result)
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
@@ -44,10 +46,9 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
-    fn test_part_one() {
-        let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, Some(12));
+    fn test_part_one_solution() {
+        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(230461440));
     }
 
     #[test]
