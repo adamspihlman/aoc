@@ -62,12 +62,21 @@ pub fn is_vertical(direction: Direction) -> bool {
     !is_horizontal(direction)
 }
 
-pub fn rotate_direction(direction: Direction) -> Direction {
+pub fn rotate_cw(direction: Direction) -> Direction {
     match direction {
         Direction::Up => Direction::Right,
         Direction::Right => Direction::Down,
         Direction::Down => Direction::Left,
         Direction::Left => Direction::Up,
+    }
+}
+
+pub fn rotate_ccw(direction: Direction) -> Direction {
+    match direction {
+        Direction::Up => Direction::Left,
+        Direction::Right => Direction::Up,
+        Direction::Down => Direction::Right,
+        Direction::Left => Direction::Down,
     }
 }
 

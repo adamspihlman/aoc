@@ -89,7 +89,7 @@ impl Garden {
     fn count_corners_at(&self, location: Location, first_direction: grid::Direction) -> u64 {
         let mut num_corners: u64 = 0;
         let plot = grid::at(&self.map, location);
-        let second_direction = grid::rotate_direction(first_direction);
+        let second_direction = grid::rotate_cw(first_direction);
 
         let first_location = grid::get_location(&self.map, location, first_direction);
         let second_location = grid::get_location(&self.map, location, second_direction);
