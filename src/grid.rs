@@ -36,6 +36,14 @@ pub fn to_direction(c: char) -> Direction {
     }
 }
 
+pub fn is_horizontal(direction: Direction) -> bool {
+    direction == Direction::Left || direction == Direction::Right
+}
+
+pub fn is_vertical(direction: Direction) -> bool {
+    !is_horizontal(direction)
+}
+
 pub fn rotate_direction(direction: Direction) -> Direction {
     match direction {
         Direction::Up => Direction::Right,
