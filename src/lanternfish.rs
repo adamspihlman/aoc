@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::grid;
 
 #[derive(Debug)]
@@ -17,6 +19,7 @@ impl From<Vec<Vec<char>>> for Lanternfish {
     fn from(value: Vec<Vec<char>>) -> Self {
         let robot_position = Lanternfish::find_robot(&value);
         let layout = Lanternfish::layout(&value);
+
         Self {
             warehouse: value,
             layout,
@@ -27,13 +30,10 @@ impl From<Vec<Vec<char>>> for Lanternfish {
 
 impl Lanternfish {
     pub fn move_robot(&mut self, direction: grid::Direction) {
-        grid::print_map(&self.warehouse);
-        println!("-------------------------");
         match self.layout {
             Layout::Standard => self.move_robot_standard(direction),
             Layout::Wide => self.move_robot_wide(direction),
         }
-        println!("Moving {:?}", direction);
     }
 
     pub fn gps_sum(&self) -> u64 {
@@ -81,6 +81,44 @@ impl Lanternfish {
         }
     }
 
+    fn write_vertical_box_moves(
+        &mut self,
+        direction: grid::Direction,
+        mut boxes: VecDeque<grid::Location>,
+    ) {
+        while !boxes.is_empty() {
+            let left_box_half = boxes.pop_front().unwrap();
+            let new_left = grid::get_location(&self.warehouse, left_box_half, direction).unwrap();
+            let new_right =
+                grid::get_location(&self.warehouse, new_left, grid::Direction::Right).unwrap();
+
+            let overwritten_left = grid::at(&self.warehouse, new_left);
+            let overwritten_right = grid::at(&self.warehouse, new_right);
+
+            if overwritten_left == '[' {
+                boxes.push_back(new_left);
+                continue;
+            } else if overwritten_left == ']' {
+                let displaced_left =
+                    grid::get_location(&self.warehouse, new_left, grid::Direction::Left).unwrap();
+                self.warehouse[displaced_left.row][displaced_left.col] = '.';
+                self.warehouse[new_left.row][new_left.col] = '[';
+                boxes.push_back(displaced_left);
+            } else if overwritten_left == '.' {
+                self.warehouse[new_left.row][new_left.col] = '[';
+            }
+            if overwritten_right == '[' {
+                let displaced_right =
+                    grid::get_location(&self.warehouse, new_right, grid::Direction::Right).unwrap();
+                self.warehouse[displaced_right.row][displaced_right.col] = '.';
+                self.warehouse[new_right.row][new_right.col] = ']';
+                boxes.push_back(new_right);
+            } else if overwritten_right == '.' {
+                self.warehouse[new_right.row][new_right.col] = ']';
+            }
+        }
+    }
+
     fn move_robot_wide(&mut self, direction: grid::Direction) {
         if !self.can_move(self.robot_position, direction) {
             return;
@@ -97,18 +135,19 @@ impl Lanternfish {
             return;
         }
 
-        panic!("Refusing vertical box move");
-        // match overwritten {
-        //     '[' => {
-        //         self.move_wide_box(next, direction);
-        //     }
-        //     ']' => {
-        //         let left_wall =
-        //             grid::get_location(&self.warehouse, next, grid::Direction::Left).unwrap();
-        //         self.move_wide_box(left_wall, direction);
-        //     }
-        //     e => panic!("Unexpected map character {e} found"),
-        // }
+        let left_box_half = if overwritten == '[' {
+            next
+        } else {
+            grid::get_location(&self.warehouse, next, grid::Direction::Left).unwrap()
+        };
+        let empty_space = if overwritten == '[' {
+            grid::get_location(&self.warehouse, next, grid::Direction::Right).unwrap()
+        } else {
+            left_box_half
+        };
+        self.warehouse[empty_space.row][empty_space.col] = '.';
+        let boxes: VecDeque<grid::Location> = VecDeque::from([left_box_half]);
+        self.write_vertical_box_moves(direction, boxes);
     }
 
     fn move_robot_standard(&mut self, direction: grid::Direction) {
@@ -149,12 +188,12 @@ impl Lanternfish {
             '[' => {
                 let right_wall =
                     grid::get_location(&self.warehouse, next, grid::Direction::Right).unwrap();
-                self.can_move(right_wall, direction)
+                self.can_move(right_wall, direction) && self.can_move(next, direction)
             }
             ']' => {
                 let left_wall =
                     grid::get_location(&self.warehouse, next, grid::Direction::Left).unwrap();
-                self.can_move(left_wall, direction)
+                self.can_move(left_wall, direction) && self.can_move(next, direction)
             }
             e => panic!("Unexpected map character '{e}' found"),
         }
@@ -217,20 +256,4 @@ impl Lanternfish {
         }
         panic!("Robot not found");
     }
-
-    // fn move_wide_box(&mut self, location: grid::Location, direction: grid::Direction) {
-    //     // I think we need different functions for moving a box to the left/right vs moving a box
-    //     //   up/down. We also need to be careful about when we modify the map vs when we read the
-    //     //   map to determine if we need to make another call to move_wide_box
-    //     //
-    //     let new_left = grid::get_location(&self.warehouse, location, direction).unwrap();
-    //     let old_right =
-    //         grid::get_location(&self.warehouse, location, grid::Direction::Right).unwrap();
-    //     let new_right = grid::get_location(&self.warehouse, old_right, direction).unwrap();
-    //
-    //     let new_left_val = grid::at(&self.warehouse, new_left);
-    //     let new_right_val = grid::at(&self.warehouse, new_right);
-    //
-    //     // if new_left_val
-    // }
 }

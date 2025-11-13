@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Hash, Eq, PartialEq, Debug, Copy, Clone, Ord, PartialOrd)]
 pub struct Location {
     pub row: usize,
@@ -24,6 +26,22 @@ pub fn print_map(map: &[Vec<char>]) {
         let cols: String = row.iter().collect();
         println!("{cols}");
     }
+}
+
+pub fn get_map_counts(map: &[Vec<char>]) -> HashMap<char, i32> {
+    let mut counts: HashMap<char, i32> = HashMap::new();
+    for row in map {
+        for &c in row {
+            *counts.entry(c).or_insert(0) += 1;
+        }
+    }
+    counts
+}
+
+pub fn print_map_counts(counts: &HashMap<char, i32>) {
+    let mut sorted: Vec<_> = counts.iter().collect();
+    sorted.sort_by_key(|&(k, _)| k);
+    println!("{:?}", sorted);
 }
 
 pub fn to_direction(c: char) -> Direction {

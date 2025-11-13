@@ -87,18 +87,14 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(9021));
     }
 
     #[test]
-    #[ignore]
-    fn test_part_two_horizontal() {
-        let _ = part_two(&advent_of_code::template::read_file_part(
-            "examples", DAY, 3,
-        ));
-        assert!(false);
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(1376686));
     }
 }
