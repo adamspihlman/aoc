@@ -21,29 +21,6 @@ pub const DIRECTIONS: [Direction; 4] = [
     Direction::Right,
 ];
 
-pub fn print_map(map: &[Vec<char>]) {
-    for row in map.iter() {
-        let cols: String = row.iter().collect();
-        println!("{cols}");
-    }
-}
-
-pub fn get_map_counts(map: &[Vec<char>]) -> HashMap<char, i32> {
-    let mut counts: HashMap<char, i32> = HashMap::new();
-    for row in map {
-        for &c in row {
-            *counts.entry(c).or_insert(0) += 1;
-        }
-    }
-    counts
-}
-
-pub fn print_map_counts(counts: &HashMap<char, i32>) {
-    let mut sorted: Vec<_> = counts.iter().collect();
-    sorted.sort_by_key(|&(k, _)| k);
-    println!("{:?}", sorted);
-}
-
 pub fn to_direction(c: char) -> Direction {
     match c {
         '^' => Direction::Up,
@@ -80,6 +57,17 @@ pub fn rotate_ccw(direction: Direction) -> Direction {
     }
 }
 
+pub fn find_only(map: &[Vec<char>], c: char) -> Location {
+    for (row, row_val) in map.iter().enumerate() {
+        for (col, &col_val) in row_val.iter().enumerate() {
+            if col_val == c {
+                return Location { row, col };
+            }
+        }
+    }
+    panic!("Char '{c}' not found in map");
+}
+
 pub fn at<T: Copy>(map: &[Vec<T>], location: Location) -> T {
     map[location.row][location.col]
 }
@@ -114,4 +102,27 @@ pub fn get_location<T>(
         col: col as usize,
     };
     Some(result)
+}
+
+pub fn print_map(map: &[Vec<char>]) {
+    for row in map.iter() {
+        let cols: String = row.iter().collect();
+        println!("{cols}");
+    }
+}
+
+pub fn get_map_counts(map: &[Vec<char>]) -> HashMap<char, i32> {
+    let mut counts: HashMap<char, i32> = HashMap::new();
+    for row in map {
+        for &c in row {
+            *counts.entry(c).or_insert(0) += 1;
+        }
+    }
+    counts
+}
+
+pub fn print_map_counts(counts: &HashMap<char, i32>) {
+    let mut sorted: Vec<_> = counts.iter().collect();
+    sorted.sort_by_key(|&(k, _)| k);
+    println!("{:?}", sorted);
 }

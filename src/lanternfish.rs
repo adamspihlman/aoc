@@ -17,7 +17,7 @@ enum Layout {
 
 impl From<Vec<Vec<char>>> for Lanternfish {
     fn from(value: Vec<Vec<char>>) -> Self {
-        let robot_position = Lanternfish::find_robot(&value);
+        let robot_position = grid::find_only(&value, '@');
         let layout = Lanternfish::layout(&value);
 
         Self {
@@ -244,16 +244,5 @@ impl Lanternfish {
             }
         }
         panic!("No boxes found in warehouse");
-    }
-
-    fn find_robot(warehouse: &[Vec<char>]) -> grid::Location {
-        for (row, row_val) in warehouse.iter().enumerate() {
-            for (col, &col_val) in row_val.iter().enumerate() {
-                if col_val == '@' {
-                    return grid::Location { row, col };
-                }
-            }
-        }
-        panic!("Robot not found");
     }
 }
