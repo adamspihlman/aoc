@@ -1,4 +1,5 @@
 pub mod antennas;
+pub mod assembly;
 pub mod claw;
 pub mod disk;
 pub mod equation;
