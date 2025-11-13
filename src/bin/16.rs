@@ -1,7 +1,11 @@
 advent_of_code::solution!(16);
 
-pub fn part_one(_input: &str) -> Option<u64> {
-    None
+pub fn part_one(input: &str) -> Option<u64> {
+    let map = advent_of_code::input::parse_2d_vector(input);
+    let maze = advent_of_code::maze::Maze::from(map);
+    let result = maze.shortest_path();
+
+    Some(result)
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
