@@ -1,5 +1,5 @@
 use std::collections::hash_map::Entry;
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 
 use crate::grid::{self, DIRECTIONS};
 
@@ -18,6 +18,12 @@ struct Node {
 struct WeightedNode {
     weight: u64,
     node: Node,
+}
+
+#[derive(Debug)]
+struct Ledger {
+    weight: u64,
+    predecessors: Vec<Node>,
 }
 
 impl From<Vec<Vec<char>>> for Maze {
@@ -59,6 +65,54 @@ impl Maze {
         weighted_ends.iter().map(|w| w.weight).min().unwrap()
     }
 
+    pub fn shortest_path_tiles(&self) -> u64 {
+        let start = self.weighted_start();
+        let mut nodes: HashMap<Node, Ledger> = HashMap::from([(
+            start.node,
+            Ledger {
+                weight: start.weight,
+                predecessors: Vec::new(),
+            },
+        )]);
+        let mut unvisited: BinaryHeap<WeightedNode> = BinaryHeap::from([start]);
+        let mut unvisited_ends = self.ends();
+        let mut weighted_ends: HashSet<WeightedNode> = HashSet::new();
+
+        while !unvisited_ends.is_empty() {
+            let wnode = Maze::next_ledger_node(&nodes, &mut unvisited);
+            if unvisited_ends.contains(&wnode.node) {
+                unvisited_ends.remove(&wnode.node);
+                weighted_ends.insert(wnode);
+            }
+
+            self.add_ledger_neighbors(wnode, &mut nodes, &mut unvisited);
+        }
+
+        let tiles = Maze::get_shortest_paths_tiles(&nodes, &weighted_ends);
+        tiles.len() as u64
+    }
+
+    fn get_shortest_paths_tiles(
+        nodes: &HashMap<Node, Ledger>,
+        weighted_ends: &HashSet<WeightedNode>,
+    ) -> HashSet<grid::Location> {
+        let mut tiles: HashSet<grid::Location> = HashSet::new();
+        let mut queue: VecDeque<Node> = VecDeque::new();
+
+        for wnode in weighted_ends {
+            tiles.insert(wnode.node.location);
+            queue.extend(nodes.get(&wnode.node).unwrap().predecessors.clone());
+        }
+
+        while !queue.is_empty() {
+            let next = queue.pop_front().unwrap();
+            tiles.insert(next.location);
+            queue.extend(nodes.get(&next).unwrap().predecessors.clone());
+        }
+
+        tiles
+    }
+
     fn add_neighbors(
         &self,
         wnode: WeightedNode,
@@ -76,6 +130,37 @@ impl Maze {
                     unvisited.push(neighbor);
                 }
                 _ => {}
+            }
+        }
+    }
+
+    fn add_ledger_neighbors(
+        &self,
+        wnode: WeightedNode,
+        nodes: &mut HashMap<Node, Ledger>,
+        unvisited: &mut BinaryHeap<WeightedNode>,
+    ) {
+        for neighbor in self.get_neighbors(wnode) {
+            match nodes.entry(neighbor.node) {
+                Entry::Vacant(e) => {
+                    e.insert(Ledger {
+                        weight: neighbor.weight,
+                        predecessors: vec![wnode.node],
+                    });
+                    unvisited.push(neighbor);
+                }
+                Entry::Occupied(mut e) => {
+                    let prior_weight = e.get().weight;
+                    if prior_weight > neighbor.weight {
+                        e.insert(Ledger {
+                            weight: neighbor.weight,
+                            predecessors: vec![wnode.node],
+                        });
+                        unvisited.push(neighbor);
+                    } else if prior_weight == neighbor.weight {
+                        e.get_mut().predecessors.push(wnode.node);
+                    }
+                }
             }
         }
     }
@@ -137,6 +222,17 @@ impl Maze {
     ) -> WeightedNode {
         let mut wnode = unvisited.pop().unwrap();
         while nodes.get(&wnode.node).unwrap() < &wnode.weight {
+            wnode = unvisited.pop().unwrap();
+        }
+        wnode
+    }
+
+    fn next_ledger_node(
+        nodes: &HashMap<Node, Ledger>,
+        unvisited: &mut BinaryHeap<WeightedNode>,
+    ) -> WeightedNode {
+        let mut wnode = unvisited.pop().unwrap();
+        while nodes.get(&wnode.node).unwrap().weight < wnode.weight {
             wnode = unvisited.pop().unwrap();
         }
         wnode
