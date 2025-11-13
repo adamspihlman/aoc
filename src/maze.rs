@@ -28,7 +28,7 @@ impl From<Vec<Vec<char>>> for Maze {
 
 impl Ord for WeightedNode {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.weight.cmp(&other.weight)
+        other.weight.cmp(&self.weight)
     }
 }
 

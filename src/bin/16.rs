@@ -17,14 +17,12 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(7036));
     }
 
     #[test]
-    #[ignore]
     fn test_part_one_example_two() {
         let result = part_one(&advent_of_code::template::read_file_part(
             "examples", DAY, 2,
