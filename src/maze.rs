@@ -99,7 +99,14 @@ impl Maze {
         let mut tiles: HashSet<grid::Location> = HashSet::new();
         let mut queue: VecDeque<Node> = VecDeque::new();
 
-        for wnode in weighted_ends {
+        let min_weight = weighted_ends.iter().map(|w| w.weight).min().unwrap();
+        let min_ends: Vec<WeightedNode> = weighted_ends
+            .iter()
+            .filter(|w| w.weight == min_weight)
+            .copied()
+            .collect();
+
+        for wnode in min_ends {
             tiles.insert(wnode.node.location);
             queue.extend(nodes.get(&wnode.node).unwrap().predecessors.clone());
         }
