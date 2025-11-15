@@ -8,13 +8,13 @@ fn parse_input(input: &str) -> (advent_of_code::assembly::Computer, Vec<u8>) {
 
     let mut lines = input.lines();
     let a = register_re.captures(lines.next().unwrap()).unwrap()[1]
-        .parse::<u32>()
+        .parse::<u64>()
         .unwrap();
     let b = register_re.captures(lines.next().unwrap()).unwrap()[1]
-        .parse::<u32>()
+        .parse::<u64>()
         .unwrap();
     let c = register_re.captures(lines.next().unwrap()).unwrap()[1]
-        .parse::<u32>()
+        .parse::<u64>()
         .unwrap();
     lines.next();
 
@@ -28,13 +28,21 @@ fn parse_input(input: &str) -> (advent_of_code::assembly::Computer, Vec<u8>) {
 
 pub fn part_one(input: &str) -> Option<String> {
     let (mut computer, program) = parse_input(input);
-    let result = computer.execute(program);
+    let output = computer.execute(&program);
 
+    let mut result = String::new();
+    output
+        .iter()
+        .for_each(|e| result.push_str(&(e.to_string() + ",")));
+    result.pop();
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let (_, program) = parse_input(input);
+    let result = advent_of_code::assembly::magic_register(program);
+
+    Some(result)
 }
 
 #[cfg(test)]
@@ -55,7 +63,15 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 2,
+        ));
+        assert_eq!(result, Some(117440));
+    }
+
+    #[test]
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(190615597431823));
     }
 }

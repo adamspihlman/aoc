@@ -1,24 +1,45 @@
 #[derive(Debug)]
 pub struct Computer {
-    a: u32,
-    b: u32,
-    c: u32,
+    a: u64,
+    b: u64,
+    c: u64,
     iptr: usize,
-    output: String,
+    output: Vec<u8>,
+}
+
+pub fn magic_register(program: Vec<u8>) -> u64 {
+    let mut result = 0;
+    for i in 1..=program.len() {
+        let target = &program[program.len() - i..program.len()];
+        let mut offset = 0;
+
+        loop {
+            let attempt = result * 8 + offset;
+            let mut computer = Computer::new(attempt, 0, 0);
+            let output = computer.execute(&program);
+            if output == target {
+                result = attempt;
+                break;
+            }
+            offset += 1;
+        }
+    }
+
+    result
 }
 
 impl Computer {
-    pub fn new(a: u32, b: u32, c: u32) -> Self {
+    pub fn new(a: u64, b: u64, c: u64) -> Self {
         Self {
             a,
             b,
             c,
             iptr: 0,
-            output: String::new(),
+            output: Vec::new(),
         }
     }
 
-    pub fn execute(&mut self, program: Vec<u8>) -> String {
+    pub fn execute(&mut self, program: &[u8]) -> Vec<u8> {
         while self.iptr < program.len() {
             self.do_instruction(program[self.iptr], program[self.iptr + 1]);
         }
@@ -46,7 +67,7 @@ impl Computer {
     }
 
     fn bxl(&mut self, operand: u8) {
-        self.b ^= operand as u32;
+        self.b ^= operand as u64;
         self.next_instruction();
     }
 
@@ -69,12 +90,8 @@ impl Computer {
     }
 
     fn out(&mut self, operand: u8) {
-        if !self.output.is_empty() {
-            self.output.push(',');
-        }
-
-        let result = self.combo_operand(operand) % 8;
-        self.output.push_str(&result.to_string());
+        let result = (self.combo_operand(operand) % 8) as u8;
+        self.output.push(result);
 
         self.next_instruction();
     }
@@ -93,9 +110,9 @@ impl Computer {
         self.iptr += 2;
     }
 
-    fn combo_operand(&self, operand: u8) -> u32 {
+    fn combo_operand(&self, operand: u8) -> u64 {
         match operand {
-            0..=3 => operand as u32,
+            0..=3 => operand as u64,
             4 => self.a,
             5 => self.b,
             6 => self.c,
@@ -103,9 +120,9 @@ impl Computer {
         }
     }
 
-    fn div(&self, operand: u8) -> u32 {
+    fn div(&self, operand: u8) -> u64 {
         let numerator = self.a;
-        let denominator = 2_u32.pow(self.combo_operand(operand));
+        let denominator = 2_u64.pow(self.combo_operand(operand) as u32);
         numerator / denominator
     }
 }
