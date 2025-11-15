@@ -1,4 +1,4 @@
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::{hash_map::Entry, BinaryHeap, HashMap};
 
 use crate::grid;
 
@@ -44,8 +44,45 @@ impl ByteDodge {
                 return wloc.weight;
             }
 
-            //
+            self.add_neighbors(wloc, &mut locations, &mut unvisited);
         }
+    }
+
+    fn add_neighbors(
+        &self,
+        wloc: WeightedLocation,
+        locations: &mut HashMap<grid::Location, u64>,
+        unvisited: &mut BinaryHeap<WeightedLocation>,
+    ) {
+        for neighbor in self.get_neighbors(wloc) {
+            match locations.entry(neighbor.location) {
+                Entry::Vacant(e) => {
+                    e.insert(neighbor.weight);
+                    unvisited.push(neighbor);
+                }
+                Entry::Occupied(mut e) if *e.get() > neighbor.weight => {
+                    e.insert(neighbor.weight);
+                    unvisited.push(neighbor);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    fn get_neighbors(&self, wloc: WeightedLocation) -> Vec<WeightedLocation> {
+        let mut result = Vec::new();
+        for direction in grid::DIRECTIONS {
+            if let Some(loc) = grid::get_location(&self.grid, wloc.location, direction) {
+                if grid::at(&self.grid, loc) == '#' {
+                    continue;
+                }
+                result.push(WeightedLocation {
+                    weight: wloc.weight + 1,
+                    location: loc,
+                });
+            }
+        }
+        result
     }
 
     fn next_wlocation(

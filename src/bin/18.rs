@@ -41,8 +41,8 @@ fn add_corruptions(
 
 pub fn part_one(input: &str) -> Option<u64> {
     let mut corruptions = parse_input(input);
-    let mut grid = grid::create_grid(7, 7, '.');
-    add_corruptions(&mut grid, &mut corruptions, 12);
+    let mut grid = grid::create_grid(71, 71, '.');
+    add_corruptions(&mut grid, &mut corruptions, 1024);
 
     let bytedodge = bytedodge::ByteDodge::from(grid);
     let result = bytedodge.min_steps();
@@ -59,10 +59,9 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
-    fn test_part_one() {
+    fn test_part_one_solution() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, Some(22));
+        assert_eq!(result, Some(372));
     }
 
     #[test]
