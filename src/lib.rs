@@ -10,6 +10,7 @@ pub mod input;
 pub mod lanternfish;
 pub mod maze;
 pub mod order_rules;
+pub mod path_blocking_analyzer;
 pub mod pathfinder;
 pub mod pattern_metrics;
 pub mod security;
