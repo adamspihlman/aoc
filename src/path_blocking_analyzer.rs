@@ -189,13 +189,15 @@ mod tests {
     fn test_basic_blocking() {
         let analyzer = PathBlockingAnalyzer::new();
 
-        // Configuration where top and bottom are accessible: 0b01000001
+        // Configuration where diagonal corners connect only through middle
         // Grid:
-        // . # #
-        // # X #
-        // . # #
-        // Top and bottom can't connect without middle
-        let config = 0b01000001; // pos 0 and 6 accessible
+        // . . #
+        // # X .
+        // # # .
+        // Path exists: 0 -> 1 -> 4(middle) -> 5 -> 8
+        // Without middle: {0,1} and {5,8} are disconnected
+        // Bit mapping: pos 0->bit0, pos 1->bit1, pos 5->bit4, pos 8->bit7
+        let config = 0b10010011; // pos 0, 1, 5, 8 accessible
         assert!(analyzer.blocks_path(config));
     }
 
@@ -220,5 +222,21 @@ mod tests {
         // Top cells can connect without going through middle
         let config = 0b00000111; // pos 0, 1, 2 accessible
         assert!(!analyzer.blocks_path(config));
+    }
+
+    #[test]
+    fn test_middle_blocks_left_right_path() {
+        let analyzer = PathBlockingAnalyzer::new();
+
+        // Configuration where left and right are only accessible through middle
+        // Grid:
+        // # # #
+        // . X .
+        // # # #
+        // Left (pos 3) and right (pos 5) can only connect through middle (pos 4)
+        // Bit mapping: pos 3 -> bit 3, pos 5 -> bit 4
+        let config = 0b00011000; // pos 3 and 5 accessible (bits 3 and 4 set)
+        assert!(analyzer.blocks_path(config),
+            "Middle obstacle should block path from left to right");
     }
 }
