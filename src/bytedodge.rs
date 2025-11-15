@@ -40,12 +40,17 @@ impl ByteDodge {
 
         loop {
             let wloc = self.next_wlocation(&locations, &mut unvisited);
-            if wloc.location == end {
-                return wloc.weight;
-            }
+            if let Some(wloc) = wloc {
+                if wloc.location == end {
+                    return wloc.weight;
+                }
 
-            self.add_neighbors(wloc, &mut locations, &mut unvisited);
+                self.add_neighbors(wloc, &mut locations, &mut unvisited);
+            } else {
+                break;
+            }
         }
+        0
     }
 
     fn add_neighbors(
@@ -89,12 +94,15 @@ impl ByteDodge {
         &self,
         locations: &HashMap<grid::Location, u64>,
         unvisited: &mut BinaryHeap<WeightedLocation>,
-    ) -> WeightedLocation {
+    ) -> Option<WeightedLocation> {
+        if unvisited.is_empty() {
+            return None;
+        }
         let mut wloc = unvisited.pop().unwrap();
         while locations.get(&wloc.location).unwrap() < &wloc.weight {
             wloc = unvisited.pop().unwrap();
         }
-        wloc
+        Some(wloc)
     }
 
     fn get_start_end(&self) -> (WeightedLocation, grid::Location) {

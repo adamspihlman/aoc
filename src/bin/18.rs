@@ -21,11 +21,7 @@ fn parse_input(input: &str) -> VecDeque<grid::Location> {
     result
 }
 
-fn add_corruptions(
-    grid: &mut [Vec<char>],
-    corruptions: &mut VecDeque<grid::Location>,
-    count: usize,
-) {
+fn add_corruptions(grid: &mut [Vec<char>], corruptions: &VecDeque<grid::Location>, count: usize) {
     if count >= corruptions.len() {
         panic!(
             "Requested {count} corruptions, but only {} provided",
@@ -33,16 +29,17 @@ fn add_corruptions(
         );
     }
 
-    for _ in 0..count {
-        let next = corruptions.pop_front().unwrap();
+    for i in 0..count {
+        let next = corruptions[i];
         grid[next.row][next.col] = '#';
     }
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut corruptions = parse_input(input);
     let mut grid = grid::create_grid(71, 71, '.');
-    add_corruptions(&mut grid, &mut corruptions, 1024);
+
+    let corruptions = parse_input(input);
+    add_corruptions(&mut grid, &corruptions, 1024);
 
     let bytedodge = bytedodge::ByteDodge::from(grid);
     let result = bytedodge.min_steps();
@@ -50,8 +47,29 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<String> {
+    let grid = grid::create_grid(71, 71, '.');
+    let corruptions = parse_input(input);
+    let mut num_corruptions = 1;
+    loop {
+        let mut grid_copy = grid.clone();
+        add_corruptions(&mut grid_copy, &corruptions, num_corruptions);
+
+        let bytedodge = bytedodge::ByteDodge::from(grid_copy);
+        let result = bytedodge.min_steps();
+
+        if result != 0 {
+            num_corruptions += 1;
+        } else {
+            let index = num_corruptions - 1;
+            let obstacle = corruptions[index];
+            let mut result = String::new();
+            result.push_str(&obstacle.col.to_string());
+            result.push(',');
+            result.push_str(&obstacle.row.to_string());
+            return Some(result);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -67,6 +85,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some("6,1".to_string()));
     }
 }
