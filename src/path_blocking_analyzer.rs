@@ -16,6 +16,12 @@ pub struct PathBlockingAnalyzer {
     blocking_configs: Vec<u8>,
 }
 
+impl Default for PathBlockingAnalyzer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PathBlockingAnalyzer {
     /// Creates a new analyzer and finds all blocking configurations
     pub fn new() -> Self {

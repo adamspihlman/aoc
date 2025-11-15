@@ -102,8 +102,7 @@ pub fn part_two(input: &str) -> Option<String> {
     let corruptions = parse_input(input);
 
     // Process corruptions starting from 0
-    for i in 0..corruptions.len() {
-        let obstacle = corruptions[i];
+    for &obstacle in &corruptions {
         grid[obstacle.row][obstacle.col] = '#';
 
         // Check if this obstacle blocks a local path
