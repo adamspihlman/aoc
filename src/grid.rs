@@ -68,6 +68,10 @@ pub fn find_only(map: &[Vec<char>], c: char) -> Location {
     panic!("Char '{c}' not found in map");
 }
 
+pub fn create_grid(height: usize, width: usize, value: char) -> Vec<Vec<char>> {
+    vec![vec![value; width]; height]
+}
+
 pub fn at<T: Copy>(map: &[Vec<T>], location: Location) -> T {
     map[location.row][location.col]
 }
