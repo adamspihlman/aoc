@@ -29,9 +29,8 @@ fn add_corruptions(grid: &mut [Vec<char>], corruptions: &VecDeque<grid::Location
         );
     }
 
-    for i in 0..count {
-        let next = corruptions[i];
-        grid[next.row][next.col] = '#';
+    for obstacle in corruptions.iter().take(count) {
+        grid[obstacle.row][obstacle.col] = '#';
     }
 }
 
