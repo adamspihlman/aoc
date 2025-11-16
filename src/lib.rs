@@ -16,5 +16,5 @@ pub mod security;
 pub mod stone;
 pub mod template;
 pub mod topograph;
+pub mod towel;
 pub mod word_search;
-// Use this file to add helper functions and additional modules.

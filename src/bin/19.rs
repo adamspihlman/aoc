@@ -1,10 +1,38 @@
+use advent_of_code::towel::{Pattern, Towel};
+
 advent_of_code::solution!(19);
 
-pub fn part_one(input: &str) -> Option<u64> {
-    None
+fn parse_input(input: &str) -> (Vec<Pattern>, Vec<Towel>) {
+    let mut lines = input.lines();
+
+    let patterns: Vec<Pattern> = lines
+        .next()
+        .unwrap()
+        .split(", ")
+        .map(|s| Pattern::from(s.to_string()))
+        .collect();
+
+    lines.next(); // skip empty line
+
+    let towels: Vec<Towel> = lines
+        .map(|line| Towel::from(line.to_string()))
+        .collect();
+
+    (patterns, towels)
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
+pub fn part_one(input: &str) -> Option<u64> {
+    let (patterns, towels) = parse_input(input);
+
+    let result = towels
+        .iter()
+        .filter(|towel| towel.is_possible(&patterns))
+        .count() as u64;
+
+    Some(result)
+}
+
+pub fn part_two(_input: &str) -> Option<u64> {
     None
 }
 
