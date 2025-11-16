@@ -7,10 +7,11 @@ pub fn part_one(input: &str) -> Option<u64> {
     let grid = parse_2d_vector(input);
     let cheat = Cheat::from(grid);
     cheat.print();
+    cheat.print_path();
     None
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
+pub fn part_two(_input: &str) -> Option<u64> {
     None
 }
 
