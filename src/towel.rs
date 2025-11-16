@@ -35,12 +35,34 @@ impl Towel {
             return false;
         }
 
+        matching_patterns.iter().any(|p| {
+            let remainder = &self.towel[p.pattern.len()..];
+            let new_towel = Towel::from(remainder.to_string());
+            new_towel.is_possible(patterns)
+        })
+    }
+
+    pub fn count_possibilities(&self, patterns: &[Pattern]) -> u64 {
+        if self.towel.is_empty() {
+            return 1;
+        }
+
+        let matching_patterns: Vec<&Pattern> = patterns
+            .iter()
+            .filter(|p| self.towel.starts_with(&p.pattern))
+            .collect();
+
+        if matching_patterns.is_empty() {
+            return 0;
+        }
+
         matching_patterns
             .iter()
-            .any(|p| {
+            .map(|p| {
                 let remainder = &self.towel[p.pattern.len()..];
                 let new_towel = Towel::from(remainder.to_string());
-                new_towel.is_possible(patterns)
+                new_towel.count_possibilities(patterns)
             })
+            .sum()
     }
 }

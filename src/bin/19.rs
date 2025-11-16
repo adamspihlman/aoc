@@ -32,8 +32,15 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let (patterns, towels) = parse_input(input);
+
+    let result = towels
+        .iter()
+        .map(|towel| towel.count_possibilities(&patterns))
+        .sum();
+
+    Some(result)
 }
 
 #[cfg(test)]
@@ -55,6 +62,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(16));
     }
 }
