@@ -1,6 +1,12 @@
+use advent_of_code::cheat::Cheat;
+use advent_of_code::input::parse_2d_vector;
+
 advent_of_code::solution!(20);
 
 pub fn part_one(input: &str) -> Option<u64> {
+    let grid = parse_2d_vector(input);
+    let cheat = Cheat::from(grid);
+    cheat.print();
     None
 }
 
