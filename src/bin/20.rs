@@ -6,12 +6,15 @@ advent_of_code::solution!(20);
 pub fn part_one(input: &str) -> Option<u64> {
     let grid = parse_2d_vector(input);
     let cheat = Cheat::from(grid);
-    let result = cheat.count_cheats(100);
+    let result = cheat.count_cheats(100, 2);
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let grid = parse_2d_vector(input);
+    let cheat = Cheat::from(grid);
+    let result = cheat.count_cheats(100, 20);
+    Some(result)
 }
 
 #[cfg(test)]
@@ -31,11 +34,17 @@ mod tests {
     }
 
     #[test]
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(1020507));
+    }
+
+    #[test]
     fn test_cheats_threshold_2() {
         let grid = parse_2d_vector(&advent_of_code::template::read_file("examples", DAY));
         let cheat = Cheat::from(grid);
         // 14 + 14 + 2 + 4 + 2 + 3 + 1 + 1 + 1 + 1 + 1 = 44 total cheats saving >= 2
-        assert_eq!(cheat.count_cheats(2), 44);
+        assert_eq!(cheat.count_cheats(2, 2), 44);
     }
 
     #[test]
@@ -43,7 +52,7 @@ mod tests {
         let grid = parse_2d_vector(&advent_of_code::template::read_file("examples", DAY));
         let cheat = Cheat::from(grid);
         // 14 + 2 + 4 + 2 + 3 + 1 + 1 + 1 + 1 + 1 = 30 total cheats saving >= 4
-        assert_eq!(cheat.count_cheats(4), 30);
+        assert_eq!(cheat.count_cheats(4, 2), 30);
     }
 
     #[test]
@@ -51,7 +60,7 @@ mod tests {
         let grid = parse_2d_vector(&advent_of_code::template::read_file("examples", DAY));
         let cheat = Cheat::from(grid);
         // 4 + 2 + 3 + 1 + 1 + 1 + 1 + 1 = 14 total cheats saving >= 8
-        assert_eq!(cheat.count_cheats(8), 14);
+        assert_eq!(cheat.count_cheats(8, 2), 14);
     }
 
     #[test]
@@ -59,7 +68,7 @@ mod tests {
         let grid = parse_2d_vector(&advent_of_code::template::read_file("examples", DAY));
         let cheat = Cheat::from(grid);
         // 2 + 3 + 1 + 1 + 1 + 1 + 1 = 10 total cheats saving >= 10
-        assert_eq!(cheat.count_cheats(10), 10);
+        assert_eq!(cheat.count_cheats(10, 2), 10);
     }
 
     #[test]
@@ -67,6 +76,6 @@ mod tests {
         let grid = parse_2d_vector(&advent_of_code::template::read_file("examples", DAY));
         let cheat = Cheat::from(grid);
         // 1 cheat saving >= 64
-        assert_eq!(cheat.count_cheats(64), 1);
+        assert_eq!(cheat.count_cheats(64, 2), 1);
     }
 }

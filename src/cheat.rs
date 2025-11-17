@@ -21,10 +21,14 @@ impl Cheat {
     }
 
     pub fn print_path(&self) {
-        println!("Path order ({}): {:?}", self.path_order.len(), self.path_order);
+        println!(
+            "Path order ({}): {:?}",
+            self.path_order.len(),
+            self.path_order
+        );
     }
 
-    pub fn count_cheats(&self, threshold: u64) -> u64 {
+    pub fn count_cheats(&self, threshold: u64, max_distance: usize) -> u64 {
         let mut count = 0;
         let path_len = self.path_order.len();
         let threshold_usize = threshold as usize;
@@ -36,7 +40,8 @@ impl Cheat {
             }
 
             for end in first_end..path_len {
-                if self.check_cheat(start, end) {
+                let max_distance = std::cmp::min(end - (start + threshold_usize), max_distance);
+                if self.check_cheat(start, end, max_distance) {
                     count += 1;
                 }
             }
@@ -45,7 +50,7 @@ impl Cheat {
         count
     }
 
-    fn check_cheat(&self, index1: usize, index2: usize) -> bool {
+    fn check_cheat(&self, index1: usize, index2: usize, max_distance: usize) -> bool {
         let loc1 = self.path_order[index1];
         let loc2 = self.path_order[index2];
 
@@ -54,7 +59,7 @@ impl Cheat {
         let manhattan_distance = row_diff + col_diff;
         let index_diff = index2.abs_diff(index1);
 
-        manhattan_distance < index_diff && manhattan_distance == 2
+        manhattan_distance < index_diff && manhattan_distance <= max_distance
     }
 
     fn find_start_and_end(grid: &[Vec<char>]) -> (Location, Location) {
