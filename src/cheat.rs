@@ -49,21 +49,12 @@ impl Cheat {
         let loc1 = self.path_order[index1];
         let loc2 = self.path_order[index2];
 
-        let same_row = loc1.row == loc2.row;
-        let same_col = loc1.col == loc2.col;
         let row_diff = loc1.row.abs_diff(loc2.row);
         let col_diff = loc1.col.abs_diff(loc2.col);
+        let manhattan_distance = row_diff + col_diff;
+        let index_diff = index2.abs_diff(index1);
 
-        if (same_row && col_diff == 2) || (same_col && row_diff == 2) {
-            // Check that the location halfway between has a wall
-            let mid_row = (loc1.row + loc2.row) / 2;
-            let mid_col = (loc1.col + loc2.col) / 2;
-            let mid_loc = Location { row: mid_row, col: mid_col };
-            let mid_char = at(&self.grid, mid_loc);
-            return mid_char == '#';
-        }
-
-        false
+        manhattan_distance < index_diff && manhattan_distance == 2
     }
 
     fn find_start_and_end(grid: &[Vec<char>]) -> (Location, Location) {
