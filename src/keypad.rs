@@ -22,10 +22,7 @@ impl Keypad {
             vec!['#', '0', 'A'],
         ];
 
-        let directional = [
-            vec!['#', '^', 'A'],
-            vec!['<', 'v', '>'],
-        ];
+        let directional = [vec!['#', '^', 'A'], vec!['<', 'v', '>']];
 
         let mut numeric_map = HashMap::new();
         for (row, row_chars) in numeric.iter().enumerate() {
@@ -47,28 +44,49 @@ impl Keypad {
         }
     }
 
-    pub fn complexity(&self, code: &str, depth: usize) -> u64 {
-        let sequence_length = self.get_sequence_length(code, depth);
+    pub fn complexity(
+        &self,
+        code: &str,
+        depth: usize,
+        cache: &mut HashMap<String, HashMap<usize, u64>>,
+    ) -> u64 {
+        let sequence_length = self.get_sequence_length(code, depth, cache);
         let numeric_part = self.get_numeric_part(code);
 
         sequence_length * numeric_part
     }
 
-    fn get_sequence_length(&self, code: &str, depth: usize) -> u64 {
-        let mut current = self.numpad_to_directional(code);
+    fn get_sequence_length(
+        &self,
+        code: &str,
+        depth: usize,
+        cache: &mut HashMap<String, HashMap<usize, u64>>,
+    ) -> u64 {
+        let numpad_result = self.numpad_to_directional(code);
 
-        for _ in 0..depth {
-            current = self.directional_to_directional(&current);
+        if depth == 0 {
+            numpad_result.len() as u64
+        } else {
+            self.directional_to_directional(&numpad_result, depth, cache)
         }
-
-        current.len() as u64
     }
 
     fn get_numeric_part(&self, code: &str) -> u64 {
         code[..code.len() - 1].parse::<u64>().unwrap()
     }
 
-    fn directional_to_directional(&self, code: &str) -> String {
+    fn directional_to_directional(
+        &self,
+        code: &str,
+        depth: usize,
+        cache: &mut HashMap<String, HashMap<usize, u64>>,
+    ) -> u64 {
+        if let Some(depth_map) = cache.get(code) {
+            if let Some(&length) = depth_map.get(&depth) {
+                return length;
+            }
+        }
+
         let mut result = String::new();
         let mut current_pos = *self.directional_map.get(&'A').unwrap();
 
@@ -79,7 +97,29 @@ impl Keypad {
             current_pos = target_pos;
         }
 
-        result
+        let total_length = if depth == 1 {
+            result.len() as u64
+        } else {
+            let mut length = 0;
+            let mut segment = String::new();
+
+            for ch in result.chars() {
+                segment.push(ch);
+                if ch == 'A' {
+                    length += self.directional_to_directional(&segment, depth - 1, cache);
+                    segment.clear();
+                }
+            }
+
+            length
+        };
+
+        cache
+            .entry(code.to_string())
+            .or_default()
+            .insert(depth, total_length);
+
+        total_length
     }
 
     fn get_directional_moves(&self, current: Location, target: Location) -> String {
@@ -252,19 +292,21 @@ mod tests {
     #[test]
     fn test_directional_to_directional_029a() {
         let keypad = Keypad::new();
-        let result = keypad.directional_to_directional("<A^A^^>AvvvA");
-        assert_eq!(result, "v<<A>>^A<A>A<AAv>A^Av<AAA>^A");
+        let mut cache = HashMap::new();
+        let result = keypad.directional_to_directional("<A^A^^>AvvvA", 1, &mut cache);
+        assert_eq!(result, 28);
     }
 
     #[test]
     fn test_sequence_lengths() {
         let keypad = Keypad::new();
+        let mut cache = HashMap::new();
 
-        assert_eq!(keypad.get_sequence_length("029A", 2), 68);
-        assert_eq!(keypad.get_sequence_length("980A", 2), 60);
-        assert_eq!(keypad.get_sequence_length("179A", 2), 68);
-        assert_eq!(keypad.get_sequence_length("456A", 2), 64);
-        assert_eq!(keypad.get_sequence_length("379A", 2), 64);
+        assert_eq!(keypad.get_sequence_length("029A", 2, &mut cache), 68);
+        assert_eq!(keypad.get_sequence_length("980A", 2, &mut cache), 60);
+        assert_eq!(keypad.get_sequence_length("179A", 2, &mut cache), 68);
+        assert_eq!(keypad.get_sequence_length("456A", 2, &mut cache), 64);
+        assert_eq!(keypad.get_sequence_length("379A", 2, &mut cache), 64);
     }
 
     #[test]
@@ -277,5 +319,4 @@ mod tests {
         assert_eq!(keypad.get_numeric_part("456A"), 456);
         assert_eq!(keypad.get_numeric_part("379A"), 379);
     }
-
 }

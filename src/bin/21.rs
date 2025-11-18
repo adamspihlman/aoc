@@ -1,4 +1,5 @@
 use advent_of_code::keypad::Keypad;
+use std::collections::HashMap;
 
 advent_of_code::solution!(21);
 
@@ -14,8 +15,12 @@ pub fn part_one(input: &str) -> Option<u64> {
     let keypad = Keypad::new();
     let codes = parse_input(input);
     let depth = 2;
+    let mut cache = HashMap::new();
 
-    let sum = codes.iter().map(|code| keypad.complexity(code, depth)).sum();
+    let sum = codes
+        .iter()
+        .map(|code| keypad.complexity(code, depth, &mut cache))
+        .sum();
 
     Some(sum)
 }
@@ -24,8 +29,12 @@ pub fn part_two(input: &str) -> Option<u64> {
     let keypad = Keypad::new();
     let codes = parse_input(input);
     let depth = 25;
+    let mut cache = HashMap::new();
 
-    let sum = codes.iter().map(|code| keypad.complexity(code, depth)).sum();
+    let sum = codes
+        .iter()
+        .map(|code| keypad.complexity(code, depth, &mut cache))
+        .sum();
 
     Some(sum)
 }
@@ -50,6 +59,7 @@ mod tests {
     #[ignore]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        println!("Part two result: {:?}", result);
+        assert!(false, "Checking part two result");
     }
 }
