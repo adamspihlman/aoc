@@ -1,7 +1,22 @@
+use advent_of_code::keypad::Keypad;
+
 advent_of_code::solution!(21);
 
-pub fn part_one(_input: &str) -> Option<u64> {
-    None
+fn parse_input(input: &str) -> Vec<String> {
+    input
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect()
+}
+
+pub fn part_one(input: &str) -> Option<u64> {
+    let keypad = Keypad::new();
+    let codes = parse_input(input);
+
+    let sum = codes.iter().map(|code| keypad.complexity(code)).sum();
+
+    Some(sum)
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
