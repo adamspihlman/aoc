@@ -14,6 +14,7 @@ pub mod maze;
 pub mod order_rules;
 pub mod pathfinder;
 pub mod pattern_metrics;
+pub mod secret;
 pub mod security;
 pub mod stone;
 pub mod template;
