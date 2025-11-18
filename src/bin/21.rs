@@ -56,10 +56,8 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        println!("Part two result: {:?}", result);
-        assert!(false, "Checking part two result");
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(191139369248202));
     }
 }
