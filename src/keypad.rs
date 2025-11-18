@@ -47,19 +47,21 @@ impl Keypad {
         }
     }
 
-    pub fn complexity(&self, code: &str) -> u64 {
-        let sequence_length = self.get_sequence_length(code);
+    pub fn complexity(&self, code: &str, depth: usize) -> u64 {
+        let sequence_length = self.get_sequence_length(code, depth);
         let numeric_part = self.get_numeric_part(code);
 
         sequence_length * numeric_part
     }
 
-    fn get_sequence_length(&self, code: &str) -> u64 {
-        let numpad_moves = self.numpad_to_directional(code);
-        let first_directional_moves = self.directional_to_directional(&numpad_moves);
-        let second_directional_moves = self.directional_to_directional(&first_directional_moves);
+    fn get_sequence_length(&self, code: &str, depth: usize) -> u64 {
+        let mut current = self.numpad_to_directional(code);
 
-        second_directional_moves.len() as u64
+        for _ in 0..depth {
+            current = self.directional_to_directional(&current);
+        }
+
+        current.len() as u64
     }
 
     fn get_numeric_part(&self, code: &str) -> u64 {
@@ -258,11 +260,11 @@ mod tests {
     fn test_sequence_lengths() {
         let keypad = Keypad::new();
 
-        assert_eq!(keypad.get_sequence_length("029A"), 68);
-        assert_eq!(keypad.get_sequence_length("980A"), 60);
-        assert_eq!(keypad.get_sequence_length("179A"), 68);
-        assert_eq!(keypad.get_sequence_length("456A"), 64);
-        assert_eq!(keypad.get_sequence_length("379A"), 64);
+        assert_eq!(keypad.get_sequence_length("029A", 2), 68);
+        assert_eq!(keypad.get_sequence_length("980A", 2), 60);
+        assert_eq!(keypad.get_sequence_length("179A", 2), 68);
+        assert_eq!(keypad.get_sequence_length("456A", 2), 64);
+        assert_eq!(keypad.get_sequence_length("379A", 2), 64);
     }
 
     #[test]

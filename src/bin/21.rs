@@ -13,14 +13,21 @@ fn parse_input(input: &str) -> Vec<String> {
 pub fn part_one(input: &str) -> Option<u64> {
     let keypad = Keypad::new();
     let codes = parse_input(input);
+    let depth = 2;
 
-    let sum = codes.iter().map(|code| keypad.complexity(code)).sum();
+    let sum = codes.iter().map(|code| keypad.complexity(code, depth)).sum();
 
     Some(sum)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let keypad = Keypad::new();
+    let codes = parse_input(input);
+    let depth = 25;
+
+    let sum = codes.iter().map(|code| keypad.complexity(code, depth)).sum();
+
+    Some(sum)
 }
 
 #[cfg(test)]
