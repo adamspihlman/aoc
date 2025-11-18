@@ -258,12 +258,11 @@ mod tests {
     fn test_sequence_lengths() {
         let keypad = Keypad::new();
 
-        let codes = vec!["029A", "980A", "179A", "456A", "379A"];
-
-        for code in codes {
-            let result = keypad.get_sequence_length(code);
-            println!("{}: {}", code, result);
-        }
+        assert_eq!(keypad.get_sequence_length("029A"), 68);
+        assert_eq!(keypad.get_sequence_length("980A"), 60);
+        assert_eq!(keypad.get_sequence_length("179A"), 68);
+        assert_eq!(keypad.get_sequence_length("456A"), 64);
+        assert_eq!(keypad.get_sequence_length("379A"), 64);
     }
 
     #[test]
