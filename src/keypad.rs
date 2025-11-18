@@ -128,18 +128,43 @@ impl Keypad {
         let col_diff = target.col as isize - current.col as isize;
 
         if row_diff < 0 && col_diff > 0 {
-            for _ in 0..col_diff {
-                moves.push('>');
+            if current.col == 0 && target.row == 0 {
+                for _ in 0..col_diff {
+                    moves.push('>');
+                }
+                for _ in 0..(-row_diff) {
+                    moves.push('^');
+                }
+            } else {
+                for _ in 0..(-row_diff) {
+                    moves.push('^');
+                }
+                for _ in 0..col_diff {
+                    moves.push('>');
+                }
+            }
+        } else if row_diff > 0 && col_diff < 0 {
+            if current.row == 0 && target.col == 0 {
+                for _ in 0..row_diff {
+                    moves.push('v');
+                }
+                for _ in 0..(-col_diff) {
+                    moves.push('<');
+                }
+            } else {
+                for _ in 0..(-col_diff) {
+                    moves.push('<');
+                }
+                for _ in 0..row_diff {
+                    moves.push('v');
+                }
+            }
+        } else if row_diff < 0 && col_diff < 0 {
+            for _ in 0..(-col_diff) {
+                moves.push('<');
             }
             for _ in 0..(-row_diff) {
                 moves.push('^');
-            }
-        } else if row_diff > 0 && col_diff < 0 {
-            for _ in 0..row_diff {
-                moves.push('v');
-            }
-            for _ in 0..(-col_diff) {
-                moves.push('<');
             }
         } else {
             if row_diff < 0 {
