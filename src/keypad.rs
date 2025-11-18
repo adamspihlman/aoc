@@ -144,11 +144,20 @@ impl Keypad {
         let col_diff = target.col as isize - current.col as isize;
 
         if row_diff < 0 && col_diff < 0 {
-            for _ in 0..(-row_diff) {
-                moves.push('^');
-            }
-            for _ in 0..(-col_diff) {
-                moves.push('<');
+            if current.row == 3 && target.col == 0 {
+                for _ in 0..(-row_diff) {
+                    moves.push('^');
+                }
+                for _ in 0..(-col_diff) {
+                    moves.push('<');
+                }
+            } else {
+                for _ in 0..(-col_diff) {
+                    moves.push('<');
+                }
+                for _ in 0..(-row_diff) {
+                    moves.push('^');
+                }
             }
         } else if row_diff > 0 && col_diff > 0 {
             for _ in 0..col_diff {
@@ -219,7 +228,7 @@ mod tests {
     fn test_numpad_to_directional_379a() {
         let keypad = Keypad::new();
         let result = keypad.numpad_to_directional("379A");
-        assert_eq!(result, "^A^^<<A>>AvvvA");
+        assert_eq!(result, "^A<<^^A>>AvvvA");
     }
 
     #[test]
@@ -258,4 +267,5 @@ mod tests {
         assert_eq!(keypad.get_numeric_part("456A"), 456);
         assert_eq!(keypad.get_numeric_part("379A"), 379);
     }
+
 }
