@@ -8,6 +8,7 @@ pub mod equation;
 pub mod garden;
 pub mod grid;
 pub mod input;
+pub mod keypad;
 pub mod lanternfish;
 pub mod maze;
 pub mod order_rules;
