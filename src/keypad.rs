@@ -160,11 +160,20 @@ impl Keypad {
                 }
             }
         } else if row_diff > 0 && col_diff > 0 {
-            for _ in 0..col_diff {
-                moves.push('>');
-            }
-            for _ in 0..row_diff {
-                moves.push('v');
+            if current.col == 0 && target.row == 3 {
+                for _ in 0..col_diff {
+                    moves.push('>');
+                }
+                for _ in 0..row_diff {
+                    moves.push('v');
+                }
+            } else {
+                for _ in 0..row_diff {
+                    moves.push('v');
+                }
+                for _ in 0..col_diff {
+                    moves.push('>');
+                }
             }
         } else {
             if row_diff < 0 {
