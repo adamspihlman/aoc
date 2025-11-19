@@ -11,6 +11,7 @@ pub mod input;
 pub mod keypad;
 pub mod lan;
 pub mod lanternfish;
+pub mod logic;
 pub mod maze;
 pub mod order_rules;
 pub mod pathfinder;
