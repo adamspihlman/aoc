@@ -1,20 +1,20 @@
-use advent_of_code::logic::{Gate, Logic, Operation, Wire};
-use std::collections::{HashMap, HashSet};
+use advent_of_code::logic::{Gate, Logic, Operation};
+use std::collections::HashMap;
 
 advent_of_code::solution!(24);
 
 fn parse_input(input: &str) -> Logic {
     let sections: Vec<&str> = input.split("\n\n").collect();
 
-    let mut wire_values: HashMap<String, bool> = HashMap::new();
+    let mut wire_values: HashMap<String, Option<bool>> = HashMap::new();
     for line in sections[0].lines() {
         let parts: Vec<&str> = line.split(": ").collect();
         let name = parts[0].to_string();
         let value = parts[1] == "1";
-        wire_values.insert(name, value);
+        wire_values.insert(name, Some(value));
     }
 
-    let mut gates = HashSet::new();
+    let mut gates = Vec::new();
     for line in sections[1].lines() {
         if line.is_empty() {
             continue;
@@ -36,24 +36,21 @@ fn parse_input(input: &str) -> Logic {
             _ => panic!("Unknown operation: {}", op_str),
         };
 
-        let input1_value = wire_values.get(&input1_name).copied();
-        let input2_value = wire_values.get(&input2_name).copied();
+        wire_values.entry(input1_name.clone()).or_insert(None);
+        wire_values.entry(input2_name.clone()).or_insert(None);
+        wire_values.entry(output_name.clone()).or_insert(None);
 
-        let input1 = Wire::new(input1_name, input1_value);
-        let input2 = Wire::new(input2_name, input2_value);
-        let output = Wire::new(output_name, None);
-
-        let gate = Gate::new(input1, input2, output, op);
-        gates.insert(gate);
+        let gate = Gate::new(input1_name, input2_name, output_name, op);
+        gates.push(gate);
     }
 
-    Logic::new(gates)
+    Logic::new(gates, wire_values)
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let logic = parse_input(input);
-    println!("{:?}", logic);
-    None
+    let mut logic = parse_input(input);
+    logic.propagate_until_stable();
+    Some(logic.get_output_number())
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
@@ -65,7 +62,6 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(2024));
@@ -77,6 +73,12 @@ mod tests {
             "examples", DAY, 2,
         ));
         assert_eq!(result, Some(4));
+    }
+
+    #[test]
+    fn test_part_one_solution() {
+        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(56620966442854));
     }
 
     #[test]
