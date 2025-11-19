@@ -6,7 +6,6 @@ advent_of_code::solution!(24);
 fn parse_input(input: &str) -> Logic {
     let sections: Vec<&str> = input.split("\n\n").collect();
 
-    // Parse initial wire values from the first section
     let mut wire_values: HashMap<String, bool> = HashMap::new();
     for line in sections[0].lines() {
         let parts: Vec<&str> = line.split(": ").collect();
@@ -15,14 +14,12 @@ fn parse_input(input: &str) -> Logic {
         wire_values.insert(name, value);
     }
 
-    // Parse gate definitions from the second section
     let mut gates = HashSet::new();
     for line in sections[1].lines() {
         if line.is_empty() {
             continue;
         }
 
-        // Parse: "x00 AND y00 -> z00"
         let parts: Vec<&str> = line.split(" -> ").collect();
         let left = parts[0];
         let output_name = parts[1].to_string();
@@ -32,7 +29,6 @@ fn parse_input(input: &str) -> Logic {
         let op_str = left_parts[1];
         let input2_name = left_parts[2].to_string();
 
-        // Parse operation
         let op = match op_str {
             "AND" => Operation::And,
             "XOR" => Operation::Xor,
@@ -40,7 +36,6 @@ fn parse_input(input: &str) -> Logic {
             _ => panic!("Unknown operation: {}", op_str),
         };
 
-        // Create wires - use initial value if it exists, otherwise None
         let input1_value = wire_values.get(&input1_name).copied();
         let input2_value = wire_values.get(&input2_name).copied();
 
