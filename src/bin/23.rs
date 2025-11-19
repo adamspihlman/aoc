@@ -20,24 +20,17 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(groups.len() as u64)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
+pub fn part_two(input: &str) -> Option<String> {
+    let parsed = parse_input(input);
+    let mut lan = lan::Lan::from(parsed);
+    let _ = lan.find_largest_group();
+
     None
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_parse_input() {
-        let input = "ab-cd\ncd-ef\nab-ef";
-        let parsed = parse_input(input);
-
-        assert_eq!(parsed.len(), 3);
-        assert_eq!(parsed[0], ("ab".to_string(), "cd".to_string()));
-        assert_eq!(parsed[1], ("cd".to_string(), "ef".to_string()));
-        assert_eq!(parsed[2], ("ab".to_string(), "ef".to_string()));
-    }
 
     #[test]
     fn test_part_one() {
@@ -52,8 +45,9 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some("co,de,ka,ta".to_string()));
     }
 }

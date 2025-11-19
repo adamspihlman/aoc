@@ -1,4 +1,11 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BinaryHeap, HashMap, HashSet};
+
+#[derive(Debug)]
+pub struct Lan {
+    connections: HashMap<Computer, HashSet<Computer>>,
+    counts_map: HashMap<u32, HashSet<Computer>>,
+    counts_heap: BinaryHeap<u32>,
+}
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
 pub struct Computer {
@@ -18,29 +25,57 @@ impl Computer {
     }
 }
 
-#[derive(Debug)]
-pub struct Lan {
-    connections: HashMap<Computer, HashSet<Computer>>,
-}
-
 impl From<Vec<(String, String)>> for Lan {
-    fn from(connections: Vec<(String, String)>) -> Self {
-        let mut map = HashMap::new();
+    fn from(value: Vec<(String, String)>) -> Self {
+        let mut connections = HashMap::new();
 
-        for (name1, name2) in connections {
+        for (name1, name2) in value {
             let comp1 = Computer::new(&name1);
             let comp2 = Computer::new(&name2);
 
-            map.entry(comp1).or_insert_with(HashSet::new).insert(comp2);
+            connections
+                .entry(comp1)
+                .or_insert_with(HashSet::new)
+                .insert(comp2);
 
-            map.entry(comp2).or_insert_with(HashSet::new).insert(comp1);
+            connections
+                .entry(comp2)
+                .or_insert_with(HashSet::new)
+                .insert(comp1);
         }
 
-        Self { connections: map }
+        let mut counts_map = HashMap::new();
+        for (computer, connections) in &connections {
+            let count = connections.len() as u32;
+            counts_map
+                .entry(count)
+                .or_insert_with(HashSet::new)
+                .insert(*computer);
+        }
+
+        let counts_heap: BinaryHeap<u32> = counts_map.keys().copied().collect();
+
+        Self {
+            connections,
+            counts_map,
+            counts_heap,
+        }
     }
 }
 
 impl Lan {
+    pub fn find_largest_group(&mut self) -> HashSet<Computer> {
+        while !self.counts_heap.is_empty() {
+            let next = self.counts_heap.pop().unwrap();
+            println!("next largest counts: {next}");
+            println!(
+                "computers with that count: {:?}",
+                self.counts_map.get(&next).unwrap()
+            );
+        }
+        HashSet::new()
+    }
+
     pub fn find_groups(&self) -> Vec<(Computer, Computer, Computer)> {
         let mut groups = Vec::new();
         let mut visited = HashSet::new();
