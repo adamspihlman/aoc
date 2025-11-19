@@ -66,10 +66,7 @@ impl Lan {
                         continue;
                     }
 
-                    if first.name().contains('t')
-                        || second.name().contains('t')
-                        || third.name().contains('t')
-                    {
+                    if first.name[0] == b't' || second.name[0] == b't' || third.name[0] == b't' {
                         let group = (*first, *second, third);
                         groups.push(group);
                     }
