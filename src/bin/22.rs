@@ -13,8 +13,18 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    use advent_of_code::secret::{combine_sequence_maps, max_price, Secret};
+    use std::collections::HashMap;
+
+    let seeds = parse_input(input);
+
+    let combined_map = seeds
+        .iter()
+        .map(|&seed| Secret::from(seed).generate_sequence_map(2000))
+        .fold(HashMap::new(), combine_sequence_maps);
+
+    max_price(&combined_map)
 }
 
 #[cfg(test)]
@@ -34,11 +44,16 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file_part(
             "examples", DAY, 2,
         ));
         assert_eq!(result, Some(23));
+    }
+
+    #[test]
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(1910));
     }
 }
