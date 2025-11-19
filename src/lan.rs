@@ -1,10 +1,8 @@
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 pub struct Lan {
     connections: HashMap<Computer, HashSet<Computer>>,
-    counts_map: HashMap<u32, HashSet<Computer>>,
-    counts_heap: BinaryHeap<u32>,
 }
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
@@ -44,38 +42,11 @@ impl From<Vec<(String, String)>> for Lan {
                 .insert(comp1);
         }
 
-        let mut counts_map = HashMap::new();
-        for (computer, connections) in &connections {
-            let count = connections.len() as u32;
-            counts_map
-                .entry(count)
-                .or_insert_with(HashSet::new)
-                .insert(*computer);
-        }
-
-        let counts_heap: BinaryHeap<u32> = counts_map.keys().copied().collect();
-
-        Self {
-            connections,
-            counts_map,
-            counts_heap,
-        }
+        Self { connections }
     }
 }
 
 impl Lan {
-    pub fn find_largest_group(&mut self) -> HashSet<Computer> {
-        while !self.counts_heap.is_empty() {
-            let next = self.counts_heap.pop().unwrap();
-            println!("next largest counts: {next}");
-            println!(
-                "computers with that count: {:?}",
-                self.counts_map.get(&next).unwrap()
-            );
-        }
-        HashSet::new()
-    }
-
     /// Find the maximal clique using the Bron-Kerbosch algorithm with pivot optimization.
     /// Returns the single largest clique in the graph.
     pub fn find_maximal_clique(&self) -> HashSet<Computer> {
