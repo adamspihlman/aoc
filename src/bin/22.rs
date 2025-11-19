@@ -1,4 +1,4 @@
-use advent_of_code::secret::Secret;
+use advent_of_code::secret;
 
 advent_of_code::solution!(22);
 
@@ -7,8 +7,8 @@ fn parse_input(input: &str) -> Vec<u64> {
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let secrets = parse_input(input);
-    let result = secrets.iter().map(|&s| Secret::generate(s, 2000)).sum();
+    let seeds = parse_input(input);
+    let result = seeds.iter().map(|&s| secret::generate(s, 2000)).sum();
 
     Some(result)
 }
@@ -34,8 +34,11 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 2,
+        ));
+        assert_eq!(result, Some(23));
     }
 }
