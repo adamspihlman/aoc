@@ -22,10 +22,17 @@ pub fn part_one(input: &str) -> Option<u64> {
 
 pub fn part_two(input: &str) -> Option<String> {
     let parsed = parse_input(input);
-    let mut lan = lan::Lan::from(parsed);
-    let _ = lan.find_largest_group();
+    let lan = lan::Lan::from(parsed);
+    let maximal_clique = lan.find_maximal_clique();
 
-    None
+    let mut names: Vec<String> = maximal_clique
+        .iter()
+        .map(|comp| comp.name().to_string())
+        .collect();
+
+    names.sort();
+
+    Some(names.join(","))
 }
 
 #[cfg(test)]
@@ -45,9 +52,17 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some("co,de,ka,ta".to_string()));
+    }
+
+    #[test]
+    fn test_part_two_solution() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(
+            result,
+            Some("bm,by,dv,ep,ia,ja,jb,ks,lv,ol,oy,uz,yt".to_string())
+        );
     }
 }
