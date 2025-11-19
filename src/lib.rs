@@ -9,6 +9,7 @@ pub mod garden;
 pub mod grid;
 pub mod input;
 pub mod keypad;
+pub mod lan;
 pub mod lanternfish;
 pub mod maze;
 pub mod order_rules;
