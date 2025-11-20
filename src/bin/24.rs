@@ -87,4 +87,84 @@ mod tests {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, None);
     }
+
+    #[test]
+    #[ignore]
+    fn visualize_circuit() {
+        let input = &advent_of_code::template::read_file("inputs", DAY);
+        let mut logic = parse_input(input);
+
+        // Propagate values before visualization to see the circuit state
+        logic.propagate_until_stable();
+
+        // 1. ASCII visualization - prints directly to stdout
+        println!("\n--- ASCII Visualization ---");
+        logic.print_ascii();
+
+        // 2. Graphviz DOT format - save to file and render with:
+        //    dot -Tpng circuit.dot -o circuit.png
+        println!("\n--- Graphviz DOT format ---");
+        let dot = logic.to_dot();
+        println!("{}", dot);
+        // Uncomment to save to file:
+        std::fs::write("circuit.dot", dot).unwrap();
+
+        // 3. Mermaid diagram - can be viewed in GitHub/VSCode or at mermaid.live
+        println!("\n--- Mermaid Diagram ---");
+        let mermaid = logic.to_mermaid();
+        println!("{}", mermaid);
+        // Uncomment to save to file:
+        std::fs::write("circuit.md", mermaid).unwrap();
+    }
+
+    #[test]
+    #[ignore]
+    fn test_adder_detection() {
+        let input = &advent_of_code::template::read_file("inputs", DAY);
+        let logic = parse_input(input);
+
+        // Find full adders first
+        let (full_adders, full_adder_indices) = logic.find_full_adders();
+        println!("Found {} full adders:", full_adders.len());
+        for (i, fa) in full_adders.iter().enumerate() {
+            println!(
+                "  FA{}: ({} + {} + {}) -> sum={}, c_out={}",
+                i, fa.x, fa.y, fa.c_in, fa.sum, fa.c_out
+            );
+        }
+
+        // Find half adders (excluding gates used in full adders)
+        let (half_adders, half_adder_indices) = logic.find_half_adders(&full_adder_indices);
+        println!("\nFound {} half adders:", half_adders.len());
+        for (i, ha) in half_adders.iter().enumerate() {
+            println!(
+                "  HA{}: ({} + {}) -> sum={}, carry={}",
+                i, ha.x, ha.y, ha.sum, ha.carry
+            );
+        }
+
+        // Find unused gates
+        let mut all_used_indices = full_adder_indices.clone();
+        all_used_indices.extend(&half_adder_indices);
+        let unused_gates = logic.find_unused_gates(&all_used_indices);
+        println!("\nFound {} unused gates:", unused_gates.len());
+        for gate in unused_gates.iter().take(10) {
+            println!("  {:?}", gate);
+        }
+        if unused_gates.len() > 10 {
+            println!("  ... and {} more", unused_gates.len() - 10);
+        }
+
+        // Summary
+        println!("\n=== Summary ===");
+        println!("Total gates: {}", logic.gate_count());
+        println!("Gates in full adders: {}", full_adder_indices.len());
+        println!("Gates in half adders: {}", half_adder_indices.len());
+        println!("Unused gates: {}", unused_gates.len());
+        println!(
+            "Accounted for: {} / {}",
+            all_used_indices.len() + unused_gates.len(),
+            logic.gate_count()
+        );
+    }
 }
