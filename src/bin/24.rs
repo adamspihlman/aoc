@@ -124,7 +124,11 @@ mod tests {
         let logic = parse_input(input);
 
         // Find full adders first
-        let (full_adders, full_adder_indices) = logic.find_full_adders();
+        let (mut full_adders, full_adder_indices) = logic.find_full_adders();
+
+        // Sort by x input wire alphabetically
+        full_adders.sort_by(|a, b| a.x.cmp(&b.x));
+
         println!("Found {} full adders:", full_adders.len());
         for (i, fa) in full_adders.iter().enumerate() {
             println!(
@@ -134,7 +138,11 @@ mod tests {
         }
 
         // Find half adders (excluding gates used in full adders)
-        let (half_adders, half_adder_indices) = logic.find_half_adders(&full_adder_indices);
+        let (mut half_adders, half_adder_indices) = logic.find_half_adders(&full_adder_indices);
+
+        // Sort by x input wire alphabetically
+        half_adders.sort_by(|a, b| a.x.cmp(&b.x));
+
         println!("\nFound {} half adders:", half_adders.len());
         for (i, ha) in half_adders.iter().enumerate() {
             println!(

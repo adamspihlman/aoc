@@ -355,9 +355,16 @@ impl Logic {
                 let c_out = &or_gate.output_name;
 
                 // Found a full adder! Record it and mark gates as used
+                // Normalize x and y: ensure x-wire is in x field, y-wire is in y field
+                let (normalized_x, normalized_y) = if x.starts_with('x') {
+                    (x.clone(), y.clone())
+                } else {
+                    (y.clone(), x.clone())
+                };
+
                 full_adders.push(FullAdder {
-                    x: x.clone(),
-                    y: y.clone(),
+                    x: normalized_x,
+                    y: normalized_y,
                     c_in: c_in.clone(),
                     sum: sum.clone(),
                     c_out: c_out.clone(),
@@ -427,9 +434,16 @@ impl Logic {
             let carry = &and_gate.output_name;
 
             // Found a half adder!
+            // Normalize x and y: ensure x-wire is in x field, y-wire is in y field
+            let (normalized_x, normalized_y) = if x.starts_with('x') {
+                (x.clone(), y.clone())
+            } else {
+                (y.clone(), x.clone())
+            };
+
             half_adders.push(HalfAdder {
-                x: x.clone(),
-                y: y.clone(),
+                x: normalized_x,
+                y: normalized_y,
                 sum: sum.clone(),
                 carry: carry.clone(),
             });
