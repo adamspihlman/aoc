@@ -308,7 +308,7 @@ impl Logic {
         // 4. AND2: temp_carry2 = temp_sum AND c_in
         // 5. OR: c_out = temp_carry1 OR temp_carry2
 
-        for (_idx1, gate1) in self.gates.iter().enumerate() {
+        for gate1 in self.gates.iter() {
             if gate1.op != Operation::Xor {
                 continue;
             }
