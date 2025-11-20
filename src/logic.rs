@@ -16,7 +16,12 @@ pub struct Gate {
 }
 
 impl Gate {
-    pub fn new(input1_name: String, input2_name: String, output_name: String, op: Operation) -> Self {
+    pub fn new(
+        input1_name: String,
+        input2_name: String,
+        output_name: String,
+        op: Operation,
+    ) -> Self {
         Self {
             input1_name,
             input2_name,
@@ -55,7 +60,8 @@ impl Logic {
                     Operation::Xor => v1 ^ v2,
                 };
 
-                self.wire_values.insert(gate.output_name.clone(), Some(result));
+                self.wire_values
+                    .insert(gate.output_name.clone(), Some(result));
                 changes_made = true;
             }
         }

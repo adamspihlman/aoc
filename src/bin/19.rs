@@ -14,9 +14,7 @@ fn parse_input(input: &str) -> (Vec<Pattern>, Vec<Towel>) {
 
     lines.next(); // skip empty line
 
-    let towels: Vec<Towel> = lines
-        .map(|line| Towel::from(line.to_string()))
-        .collect();
+    let towels: Vec<Towel> = lines.map(|line| Towel::from(line.to_string())).collect();
 
     (patterns, towels)
 }
