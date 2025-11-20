@@ -6,32 +6,34 @@ use advent_of_code::{
 advent_of_code::solution!(25);
 
 fn to_key(grid: Vec<Vec<char>>) -> Key {
-    let mut heights: Vec<usize> = Vec::new();
-    for col in 0..grid[0].len() {
-        let mut height = 1;
-        loop {
-            if grid[6 - height][col] == '.' {
-                break;
+    let heights: Vec<usize> = (0..grid[0].len())
+        .map(|col| {
+            let mut height = 1;
+            loop {
+                if grid[6 - height][col] == '.' {
+                    break;
+                }
+                height += 1;
             }
-            height += 1;
-        }
-        heights.push(height - 1);
-    }
+            height - 1
+        })
+        .collect();
     Key::from(heights)
 }
 
 fn to_lock(grid: Vec<Vec<char>>) -> Lock {
-    let mut heights: Vec<usize> = Vec::new();
-    for col in 0..grid[0].len() {
-        let mut height = 1;
-        loop {
-            if grid[height][col] == '.' {
-                break;
+    let heights: Vec<usize> = (0..grid[0].len())
+        .map(|col| {
+            let mut height = 1;
+            loop {
+                if grid[height][col] == '.' {
+                    break;
+                }
+                height += 1;
             }
-            height += 1;
-        }
-        heights.push(height - 1);
-    }
+            height - 1
+        })
+        .collect();
     Lock::from(heights)
 }
 
