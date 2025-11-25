@@ -63,7 +63,7 @@ impl Secret {
     pub fn generate_sequence_map(
         &self,
         iterations: usize,
-    ) -> std::collections::HashMap<Vec<i32>, u64> {
+    ) -> std::collections::HashMap<[i32; 4], u64> {
         use std::collections::{HashMap, VecDeque};
 
         let mut map = HashMap::new();
@@ -79,7 +79,12 @@ impl Secret {
                 }
 
                 if change_window.len() == 4 {
-                    let sequence: Vec<i32> = change_window.iter().copied().collect();
+                    let sequence: [i32; 4] = [
+                        change_window[0],
+                        change_window[1],
+                        change_window[2],
+                        change_window[3],
+                    ];
                     map.entry(sequence).or_insert(current.get_price());
                 }
             }
@@ -94,9 +99,9 @@ impl Secret {
 }
 
 pub fn combine_sequence_maps(
-    map1: std::collections::HashMap<Vec<i32>, u64>,
-    map2: std::collections::HashMap<Vec<i32>, u64>,
-) -> std::collections::HashMap<Vec<i32>, u64> {
+    map1: std::collections::HashMap<[i32; 4], u64>,
+    map2: std::collections::HashMap<[i32; 4], u64>,
+) -> std::collections::HashMap<[i32; 4], u64> {
     let mut result = map1.clone();
 
     for (sequence, price) in map2 {
@@ -109,7 +114,7 @@ pub fn combine_sequence_maps(
     result
 }
 
-pub fn max_price(map: &std::collections::HashMap<Vec<i32>, u64>) -> Option<u64> {
+pub fn max_price(map: &std::collections::HashMap<[i32; 4], u64>) -> Option<u64> {
     map.values().max().copied()
 }
 
@@ -160,9 +165,9 @@ mod tests {
         let secret = Secret::from(123);
         let map = secret.generate_sequence_map(7);
 
-        assert_eq!(map.get(&vec![-3, 6, -1, -1]), Some(&4));
-        assert_eq!(map.get(&vec![6, -1, -1, 0]), Some(&4));
-        assert_eq!(map.get(&vec![-1, -1, 0, 2]), Some(&6));
+        assert_eq!(map.get(&[-3, 6, -1, -1]), Some(&4));
+        assert_eq!(map.get(&[6, -1, -1, 0]), Some(&4));
+        assert_eq!(map.get(&[-1, -1, 0, 2]), Some(&6));
         assert_eq!(map.len(), 3);
     }
 
@@ -171,21 +176,21 @@ mod tests {
         use std::collections::HashMap;
 
         let mut map1 = HashMap::new();
-        map1.insert(vec![1, 2, 3, 4], 10);
-        map1.insert(vec![5, 6, 7, 8], 20);
-        map1.insert(vec![9, 10, 11, 12], 30);
+        map1.insert([1, 2, 3, 4], 10);
+        map1.insert([5, 6, 7, 8], 20);
+        map1.insert([9, 10, 11, 12], 30);
 
         let mut map2 = HashMap::new();
-        map2.insert(vec![1, 2, 3, 4], 15);
-        map2.insert(vec![5, 6, 7, 8], 5);
-        map2.insert(vec![13, 14, 15, 16], 40);
+        map2.insert([1, 2, 3, 4], 15);
+        map2.insert([5, 6, 7, 8], 5);
+        map2.insert([13, 14, 15, 16], 40);
 
         let combined = combine_sequence_maps(map1, map2);
 
-        assert_eq!(combined.get(&vec![1, 2, 3, 4]), Some(&25));
-        assert_eq!(combined.get(&vec![5, 6, 7, 8]), Some(&25));
-        assert_eq!(combined.get(&vec![9, 10, 11, 12]), Some(&30));
-        assert_eq!(combined.get(&vec![13, 14, 15, 16]), Some(&40));
+        assert_eq!(combined.get(&[1, 2, 3, 4]), Some(&25));
+        assert_eq!(combined.get(&[5, 6, 7, 8]), Some(&25));
+        assert_eq!(combined.get(&[9, 10, 11, 12]), Some(&30));
+        assert_eq!(combined.get(&[13, 14, 15, 16]), Some(&40));
         assert_eq!(combined.len(), 4);
     }
 
@@ -194,13 +199,13 @@ mod tests {
         use std::collections::HashMap;
 
         let mut map = HashMap::new();
-        map.insert(vec![1, 2, 3, 4], 10);
-        map.insert(vec![5, 6, 7, 8], 50);
-        map.insert(vec![9, 10, 11, 12], 30);
+        map.insert([1, 2, 3, 4], 10);
+        map.insert([5, 6, 7, 8], 50);
+        map.insert([9, 10, 11, 12], 30);
 
         assert_eq!(max_price(&map), Some(50));
 
-        let empty_map: HashMap<Vec<i32>, u64> = HashMap::new();
+        let empty_map: HashMap<[i32; 4], u64> = HashMap::new();
         assert_eq!(max_price(&empty_map), None);
     }
 }
