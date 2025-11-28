@@ -1,22 +1,11 @@
 //! Generic pathfinding algorithms for grid-based problems.
 //!
-//! This module provides a trait-based Dijkstra implementation that can be
-//! used for various pathfinding scenarios.
+//! This module provides both trait-based and closure-based Dijkstra
+//! implementations for various pathfinding scenarios.
 
 use std::collections::hash_map::Entry;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::hash::Hash;
-
-/// A node in the search graph with its neighbors and costs.
-///
-/// Implement this trait for your specific pathfinding problem.
-pub trait SearchNode: Copy + Eq + Hash {
-    /// Returns all neighboring nodes and the cost to reach them.
-    fn neighbors(&self) -> Vec<(Self, u64)>;
-
-    /// Returns true if this node is a goal state.
-    fn is_goal(&self) -> bool;
-}
 
 /// Weighted node for priority queue ordering.
 #[derive(Hash, Eq, PartialEq, Debug, Copy, Clone)]
@@ -44,10 +33,20 @@ struct Ledger<N> {
     predecessors: Vec<N>,
 }
 
-/// Find the shortest path cost from start to any goal node.
+/// Find the shortest path cost from start to a goal using Dijkstra's algorithm.
+///
+/// # Arguments
+/// * `start` - The starting node
+/// * `neighbors` - Function returning neighboring nodes and their costs
+/// * `is_goal` - Predicate to check if a node is a goal
 ///
 /// Returns `None` if no path exists.
-pub fn dijkstra<N: SearchNode>(start: N) -> Option<u64> {
+pub fn dijkstra<N, FN, FG>(start: N, neighbors: FN, is_goal: FG) -> Option<u64>
+where
+    N: Copy + Eq + Hash,
+    FN: Fn(&N) -> Vec<(N, u64)>,
+    FG: Fn(&N) -> bool,
+{
     let start_weighted = WeightedNode {
         weight: 0,
         node: start,
@@ -56,11 +55,11 @@ pub fn dijkstra<N: SearchNode>(start: N) -> Option<u64> {
     let mut queue: BinaryHeap<WeightedNode<N>> = BinaryHeap::from([start_weighted]);
 
     while let Some(current) = pop_best(&visited, &mut queue) {
-        if current.node.is_goal() {
+        if is_goal(&current.node) {
             return Some(current.weight);
         }
 
-        for (neighbor, cost) in current.node.neighbors() {
+        for (neighbor, cost) in neighbors(&current.node) {
             let new_weight = current.weight + cost;
             match visited.entry(neighbor) {
                 Entry::Vacant(e) => {
@@ -85,14 +84,35 @@ pub fn dijkstra<N: SearchNode>(start: N) -> Option<u64> {
     None
 }
 
-/// Find all nodes that lie on any shortest path from start to goal.
+/// Result of all-paths Dijkstra search.
+pub struct AllPathsResult<L> {
+    /// All locations on any shortest path.
+    pub path_locations: HashSet<L>,
+    /// The minimum cost to reach a goal.
+    pub min_cost: u64,
+}
+
+/// Find all nodes that lie on any shortest path from start to a goal.
 ///
-/// Returns the set of nodes on optimal paths and the minimum cost.
+/// # Arguments
+/// * `start` - The starting node
+/// * `neighbors` - Function returning neighboring nodes and their costs
+/// * `is_goal` - Predicate to check if a node is a goal
+/// * `locator` - Function to extract a location from a node (for tracking)
+///
 /// Returns `None` if no path exists.
-pub fn dijkstra_all_paths<N, L>(start: N, locator: L) -> Option<(HashSet<N::Location>, u64)>
+pub fn dijkstra_all_paths<N, L, FN, FG, FL>(
+    start: N,
+    neighbors: FN,
+    is_goal: FG,
+    locator: FL,
+) -> Option<AllPathsResult<L>>
 where
-    N: SearchNode + AllPathsNode,
-    L: Fn(&N) -> N::Location,
+    N: Copy + Eq + Hash,
+    L: Eq + Hash,
+    FN: Fn(&N) -> Vec<(N, u64)>,
+    FG: Fn(&N) -> bool,
+    FL: Fn(&N) -> L,
 {
     let start_weighted = WeightedNode {
         weight: 0,
@@ -109,24 +129,27 @@ where
     let mut goal_nodes: HashSet<WeightedNode<N>> = HashSet::new();
     let mut found_goals: HashSet<N> = HashSet::new();
 
-    // First pass: find all goal nodes with their weights
     while !queue.is_empty() {
         let current = pop_best_ledger(&visited, &mut queue);
 
-        if current.node.is_goal() && !found_goals.contains(&current.node) {
+        if is_goal(&current.node) && !found_goals.contains(&current.node) {
             found_goals.insert(current.node);
             goal_nodes.insert(current);
         }
 
-        // Stop exploring once we've found goals and current weight exceeds minimum
+        // Stop exploring once we've found goals and weight exceeds minimum
         if !goal_nodes.is_empty() {
-            let min_goal_weight = goal_nodes.iter().map(|g| g.weight).min().unwrap_or(u64::MAX);
+            let min_goal_weight = goal_nodes
+                .iter()
+                .map(|g| g.weight)
+                .min()
+                .unwrap_or(u64::MAX);
             if current.weight > min_goal_weight {
                 break;
             }
         }
 
-        for (neighbor, cost) in current.node.neighbors() {
+        for (neighbor, cost) in neighbors(&current.node) {
             let new_weight = current.weight + cost;
             match visited.entry(neighbor) {
                 Entry::Vacant(e) => {
@@ -163,45 +186,43 @@ where
     }
 
     // Find minimum weight goal(s)
-    let min_weight = goal_nodes
+    let min_cost = goal_nodes
         .iter()
         .map(|g| g.weight)
         .min()
         .expect("goal_nodes is not empty");
     let min_goals: Vec<WeightedNode<N>> = goal_nodes
         .iter()
-        .filter(|g| g.weight == min_weight)
+        .filter(|g| g.weight == min_cost)
         .copied()
         .collect();
 
     // Backtrack to find all nodes on shortest paths
-    let mut path_nodes: HashSet<N::Location> = HashSet::new();
+    let mut path_locations: HashSet<L> = HashSet::new();
     let mut backtrack_queue: VecDeque<N> = VecDeque::new();
 
     for goal in min_goals {
-        path_nodes.insert(locator(&goal.node));
+        path_locations.insert(locator(&goal.node));
         if let Some(ledger) = visited.get(&goal.node) {
             backtrack_queue.extend(ledger.predecessors.iter().copied());
         }
     }
 
     while let Some(node) = backtrack_queue.pop_front() {
-        path_nodes.insert(locator(&node));
+        path_locations.insert(locator(&node));
         if let Some(ledger) = visited.get(&node) {
             backtrack_queue.extend(ledger.predecessors.iter().copied());
         }
     }
 
-    Some((path_nodes, min_weight))
-}
-
-/// Trait for nodes that can extract a location for all-paths tracking.
-pub trait AllPathsNode {
-    type Location: Eq + Hash;
+    Some(AllPathsResult {
+        path_locations,
+        min_cost,
+    })
 }
 
 /// Pop the next node from the queue, skipping outdated entries.
-fn pop_best<N: SearchNode>(
+fn pop_best<N: Copy + Eq + Hash>(
     visited: &HashMap<N, u64>,
     queue: &mut BinaryHeap<WeightedNode<N>>,
 ) -> Option<WeightedNode<N>> {
@@ -216,7 +237,7 @@ fn pop_best<N: SearchNode>(
 }
 
 /// Pop the next node from the queue for ledger-based search.
-fn pop_best_ledger<N: SearchNode>(
+fn pop_best_ledger<N: Copy + Eq + Hash>(
     visited: &HashMap<N, Ledger<N>>,
     queue: &mut BinaryHeap<WeightedNode<N>>,
 ) -> WeightedNode<N> {

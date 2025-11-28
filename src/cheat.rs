@@ -1,6 +1,11 @@
-use crate::grid::{at, find_only, get_location, print_map, Location, DIRECTIONS};
-use std::collections::VecDeque;
+//! Cheat path analysis for Day 20.
+//!
+//! Analyzes paths through a maze to find "cheats" (shortcuts through walls).
 
+use crate::bfs;
+use crate::grid::{at, find_only, get_location, print_map, Location, DIRECTIONS};
+
+/// Cheat analyzer for a maze with a single path.
 #[derive(Debug)]
 pub struct Cheat {
     grid: Vec<Vec<char>>,
@@ -9,8 +14,25 @@ pub struct Cheat {
 
 impl From<Vec<Vec<char>>> for Cheat {
     fn from(grid: Vec<Vec<char>>) -> Self {
-        let (start, end) = Self::find_start_and_end(&grid);
-        let path_order = Self::build_path(&grid, start, end);
+        let start = find_only(&grid, 'S');
+        let end = find_only(&grid, 'E');
+
+        let path_order = bfs::build_path(
+            start,
+            |loc| {
+                DIRECTIONS
+                    .iter()
+                    .filter_map(|&d| {
+                        get_location(&grid, *loc, d).filter(|&next| {
+                            let c = at(&grid, next);
+                            c == '.' || c == 'S' || c == 'E'
+                        })
+                    })
+                    .collect()
+            },
+            |loc| *loc == end,
+        );
+
         Self { grid, path_order }
     }
 }
@@ -28,6 +50,9 @@ impl Cheat {
         );
     }
 
+    /// Count cheats that save at least `threshold` steps.
+    ///
+    /// A cheat allows passing through walls for up to `max_distance` steps.
     pub fn count_cheats(&self, threshold: u64, max_distance: usize) -> u64 {
         let mut count = 0;
         let path_len = self.path_order.len();
@@ -40,8 +65,8 @@ impl Cheat {
             }
 
             for end in first_end..path_len {
-                let max_distance = std::cmp::min(end - (start + threshold_usize), max_distance);
-                if self.check_cheat(start, end, max_distance) {
+                let max_dist = std::cmp::min(end - (start + threshold_usize), max_distance);
+                if self.check_cheat(start, end, max_dist) {
                     count += 1;
                 }
             }
@@ -50,6 +75,7 @@ impl Cheat {
         count
     }
 
+    /// Check if a cheat between two path indices is valid.
     fn check_cheat(&self, index1: usize, index2: usize, max_distance: usize) -> bool {
         let loc1 = self.path_order[index1];
         let loc2 = self.path_order[index2];
@@ -60,42 +86,5 @@ impl Cheat {
         let index_diff = index2.abs_diff(index1);
 
         manhattan_distance < index_diff && manhattan_distance <= max_distance
-    }
-
-    fn find_start_and_end(grid: &[Vec<char>]) -> (Location, Location) {
-        let start = find_only(grid, 'S');
-        let end = find_only(grid, 'E');
-        (start, end)
-    }
-
-    fn build_path(grid: &[Vec<char>], start: Location, end: Location) -> Vec<Location> {
-        let mut visited = std::collections::HashSet::new();
-        let mut path_order = Vec::new();
-        let mut queue = VecDeque::new();
-
-        queue.push_back(start);
-        visited.insert(start);
-        path_order.push(start);
-
-        while let Some(current) = queue.pop_front() {
-            if current == end {
-                break;
-            }
-
-            for direction in DIRECTIONS {
-                if let Some(next_loc) = get_location(grid, current, direction) {
-                    let next_char = at(grid, next_loc);
-                    if (next_char == '.' || next_char == 'S' || next_char == 'E')
-                        && !visited.contains(&next_loc)
-                    {
-                        visited.insert(next_loc);
-                        path_order.push(next_loc);
-                        queue.push_back(next_loc);
-                    }
-                }
-            }
-        }
-
-        path_order
     }
 }
