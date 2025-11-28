@@ -1,21 +1,9 @@
-use std::collections::HashMap;
-
 advent_of_code::solution!(1);
 
-fn parse_lists(input: &str) -> (Vec<u64>, Vec<u64>) {
-    input
-        .lines()
-        .map(|line| {
-            let mut parts = line.split_whitespace();
-            let left = parts.next().unwrap().parse::<u64>().unwrap();
-            let right = parts.next().unwrap().parse::<u64>().unwrap();
-            (left, right)
-        })
-        .unzip()
-}
+use advent_of_code::input::{count_frequencies, parse_pairs};
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let (mut left_list, mut right_list) = parse_lists(input);
+    let (mut left_list, mut right_list): (Vec<u64>, Vec<u64>) = parse_pairs(input);
 
     left_list.sort();
     right_list.sort();
@@ -30,16 +18,8 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let (left_list, right_list) = parse_lists(input);
-
-    let mut freq_map: HashMap<u64, u64> = HashMap::new();
-
-    for &item in &right_list {
-        freq_map
-            .entry(item)
-            .and_modify(|count| *count += 1)
-            .or_insert(1);
-    }
+    let (left_list, right_list): (Vec<u64>, Vec<u64>) = parse_pairs(input);
+    let freq_map = count_frequencies(&right_list);
 
     let result = left_list
         .iter()

@@ -1,13 +1,10 @@
+use advent_of_code::input::parse_lines;
 use advent_of_code::secret;
 
 advent_of_code::solution!(22);
 
-fn parse_input(input: &str) -> Vec<u64> {
-    input.lines().map(|l| l.parse::<u64>().unwrap()).collect()
-}
-
 pub fn part_one(input: &str) -> Option<u64> {
-    let seeds = parse_input(input);
+    let seeds: Vec<u64> = parse_lines(input);
     let result = seeds.iter().map(|&s| secret::generate(s, 2000)).sum();
 
     Some(result)
@@ -17,7 +14,7 @@ pub fn part_two(input: &str) -> Option<u64> {
     use advent_of_code::secret::{combine_sequence_maps, max_price, Secret};
     use std::collections::HashMap;
 
-    let seeds = parse_input(input);
+    let seeds: Vec<u64> = parse_lines(input);
 
     let combined_map = seeds
         .iter()
