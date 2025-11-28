@@ -48,6 +48,8 @@ impl Rules {
     }
 
     fn is_before(&self, before: u64, after: u64) -> bool {
-        self.rules.contains_key(&before) && self.rules.get(&before).unwrap().contains(&after)
+        self.rules
+            .get(&before)
+            .map_or(false, |afters| afters.contains(&after))
     }
 }

@@ -96,8 +96,10 @@ impl ClawBuilder {
     }
 
     pub fn machines(mut self, input: &str) -> ClawBuilder {
-        let button_regex = Regex::new(r"^Button [AB]: X\+(\d+), Y\+(\d+)").unwrap();
-        let prize_regex = Regex::new(r"^Prize: X=(\d+), Y=(\d+)").unwrap();
+        let button_regex =
+            Regex::new(r"^Button [AB]: X\+(\d+), Y\+(\d+)").expect("button regex should compile");
+        let prize_regex =
+            Regex::new(r"^Prize: X=(\d+), Y=(\d+)").expect("prize regex should compile");
 
         let mut machines = Vec::new();
         let mut input_type = InputType::AButton;
@@ -153,16 +155,24 @@ impl ClawBuilder {
     }
 
     fn create_button(line: &str, re: &Regex, cost: u64) -> Button {
-        let (_, [x, y]) = re.captures_iter(line).next().unwrap().extract();
-        let x = x.parse::<u64>().unwrap();
-        let y = y.parse::<u64>().unwrap();
+        let (_, [x, y]) = re
+            .captures_iter(line)
+            .next()
+            .expect("button line should match regex")
+            .extract();
+        let x = x.parse::<u64>().expect("button x should be valid u64");
+        let y = y.parse::<u64>().expect("button y should be valid u64");
         Button { cost, x, y }
     }
 
     fn create_prize(line: &str, re: &Regex, prize_offset: u64) -> Prize {
-        let (_, [x, y]) = re.captures_iter(line).next().unwrap().extract();
-        let x = x.parse::<u64>().unwrap() + prize_offset;
-        let y = y.parse::<u64>().unwrap() + prize_offset;
+        let (_, [x, y]) = re
+            .captures_iter(line)
+            .next()
+            .expect("prize line should match regex")
+            .extract();
+        let x = x.parse::<u64>().expect("prize x should be valid u64") + prize_offset;
+        let y = y.parse::<u64>().expect("prize y should be valid u64") + prize_offset;
 
         Prize { x, y }
     }

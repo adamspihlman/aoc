@@ -52,7 +52,8 @@ impl Lanternfish {
 
     fn write_robot_move(&mut self, direction: grid::Direction) -> (grid::Location, char) {
         self.warehouse[self.robot_position.row][self.robot_position.col] = '.';
-        let next = grid::get_location(&self.warehouse, self.robot_position, direction).unwrap();
+        let next = grid::get_location(&self.warehouse, self.robot_position, direction)
+            .expect("robot move should be in bounds");
         self.robot_position = next;
         let overwritten = grid::at(&self.warehouse, next);
         self.warehouse[self.robot_position.row][self.robot_position.col] = '@';
@@ -60,7 +61,9 @@ impl Lanternfish {
     }
 
     fn write_horizontal_box_move(&mut self, start: grid::Location, direction: grid::Direction) {
-        let empty_location = self.find_empty_space(start, direction).unwrap();
+        let empty_location = self
+            .find_empty_space(start, direction)
+            .expect("should have empty space for box move");
         let mut first_box_half = start;
         let (first_box, second_box) = if direction == grid::Direction::Left {
             (']', '[')
@@ -70,14 +73,14 @@ impl Lanternfish {
 
         let num_boxes = empty_location.col.abs_diff(first_box_half.col).div_ceil(2);
         for _ in 0..num_boxes {
-            let second_box_half =
-                grid::get_location(&self.warehouse, first_box_half, direction).unwrap();
+            let second_box_half = grid::get_location(&self.warehouse, first_box_half, direction)
+                .expect("box half should be in bounds");
 
             self.warehouse[first_box_half.row][first_box_half.col] = first_box;
             self.warehouse[second_box_half.row][second_box_half.col] = second_box;
 
-            first_box_half =
-                grid::get_location(&self.warehouse, second_box_half, direction).unwrap();
+            first_box_half = grid::get_location(&self.warehouse, second_box_half, direction)
+                .expect("next box half should be in bounds");
         }
     }
 
@@ -86,11 +89,11 @@ impl Lanternfish {
         direction: grid::Direction,
         mut boxes: VecDeque<grid::Location>,
     ) {
-        while !boxes.is_empty() {
-            let left_box_half = boxes.pop_front().unwrap();
-            let new_left = grid::get_location(&self.warehouse, left_box_half, direction).unwrap();
-            let new_right =
-                grid::get_location(&self.warehouse, new_left, grid::Direction::Right).unwrap();
+        while let Some(left_box_half) = boxes.pop_front() {
+            let new_left = grid::get_location(&self.warehouse, left_box_half, direction)
+                .expect("vertical box move should be in bounds");
+            let new_right = grid::get_location(&self.warehouse, new_left, grid::Direction::Right)
+                .expect("right box half should be in bounds");
 
             let overwritten_left = grid::at(&self.warehouse, new_left);
             let overwritten_right = grid::at(&self.warehouse, new_right);
@@ -100,7 +103,8 @@ impl Lanternfish {
                 continue;
             } else if overwritten_left == ']' {
                 let displaced_left =
-                    grid::get_location(&self.warehouse, new_left, grid::Direction::Left).unwrap();
+                    grid::get_location(&self.warehouse, new_left, grid::Direction::Left)
+                        .expect("displaced left should be in bounds");
                 self.warehouse[displaced_left.row][displaced_left.col] = '.';
                 self.warehouse[new_left.row][new_left.col] = '[';
                 boxes.push_back(displaced_left);
@@ -109,7 +113,8 @@ impl Lanternfish {
             }
             if overwritten_right == '[' {
                 let displaced_right =
-                    grid::get_location(&self.warehouse, new_right, grid::Direction::Right).unwrap();
+                    grid::get_location(&self.warehouse, new_right, grid::Direction::Right)
+                        .expect("displaced right should be in bounds");
                 self.warehouse[displaced_right.row][displaced_right.col] = '.';
                 self.warehouse[new_right.row][new_right.col] = ']';
                 boxes.push_back(new_right);
@@ -130,7 +135,8 @@ impl Lanternfish {
         }
 
         if grid::is_horizontal(direction) {
-            let start = grid::get_location(&self.warehouse, next, direction).unwrap();
+            let start = grid::get_location(&self.warehouse, next, direction)
+                .expect("horizontal move should be in bounds");
             self.write_horizontal_box_move(start, direction);
             return;
         }
@@ -138,10 +144,12 @@ impl Lanternfish {
         let left_box_half = if overwritten == '[' {
             next
         } else {
-            grid::get_location(&self.warehouse, next, grid::Direction::Left).unwrap()
+            grid::get_location(&self.warehouse, next, grid::Direction::Left)
+                .expect("left box half should be in bounds")
         };
         let empty_space = if overwritten == '[' {
-            grid::get_location(&self.warehouse, next, grid::Direction::Right).unwrap()
+            grid::get_location(&self.warehouse, next, grid::Direction::Right)
+                .expect("right side should be in bounds")
         } else {
             left_box_half
         };
@@ -151,11 +159,9 @@ impl Lanternfish {
     }
 
     fn move_robot_standard(&mut self, direction: grid::Direction) {
-        let empty_space = self.find_empty_space(self.robot_position, direction);
-        if empty_space.is_none() {
+        let Some(empty_space) = self.find_empty_space(self.robot_position, direction) else {
             return;
-        }
-        let empty_space = empty_space.unwrap();
+        };
 
         let (_, overwritten) = self.write_robot_move(direction);
 
@@ -180,19 +186,21 @@ impl Lanternfish {
             return true;
         }
 
-        let next = grid::get_location(&self.warehouse, location, direction).unwrap();
+        let next = grid::get_location(&self.warehouse, location, direction)
+            .expect("can_move check should be in bounds");
         let c = grid::at(&self.warehouse, next);
 
         match c {
             '.' => true,
             '[' => {
                 let right_wall =
-                    grid::get_location(&self.warehouse, next, grid::Direction::Right).unwrap();
+                    grid::get_location(&self.warehouse, next, grid::Direction::Right)
+                        .expect("right side of box should be in bounds");
                 self.can_move(right_wall, direction) && self.can_move(next, direction)
             }
             ']' => {
-                let left_wall =
-                    grid::get_location(&self.warehouse, next, grid::Direction::Left).unwrap();
+                let left_wall = grid::get_location(&self.warehouse, next, grid::Direction::Left)
+                    .expect("left side of box should be in bounds");
                 self.can_move(left_wall, direction) && self.can_move(next, direction)
             }
             e => panic!("Unexpected map character '{e}' found"),
@@ -206,7 +214,8 @@ impl Lanternfish {
     ) -> Option<grid::Location> {
         let mut position = location;
         loop {
-            let next = grid::get_location(&self.warehouse, position, direction).unwrap();
+            let next = grid::get_location(&self.warehouse, position, direction)
+                .expect("search for empty space should stay in bounds");
 
             match grid::at(&self.warehouse, next) {
                 '.' => {

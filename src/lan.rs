@@ -19,7 +19,7 @@ impl Computer {
     }
 
     pub fn name(&self) -> &str {
-        std::str::from_utf8(&self.name).unwrap()
+        std::str::from_utf8(&self.name).expect("computer name should be valid UTF-8")
     }
 }
 
@@ -147,7 +147,10 @@ impl Lan {
                 }
                 inner_visited.insert(*second);
 
-                let second_connections = self.connections.get(second).unwrap();
+                let second_connections = self
+                    .connections
+                    .get(second)
+                    .expect("second computer should have connections");
                 let intersection: HashSet<_> = first_connections
                     .intersection(second_connections)
                     .copied()

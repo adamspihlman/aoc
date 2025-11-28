@@ -61,10 +61,12 @@ impl Stone {
 
         let value_str = self.value.to_string();
         if value_str.len().is_multiple_of(2) {
-            let left = value_str[0..value_str.len() / 2].parse::<u64>().unwrap();
+            let left = value_str[0..value_str.len() / 2]
+                .parse::<u64>()
+                .expect("left half should be valid u64");
             let right = value_str[value_str.len() / 2..value_str.len()]
                 .parse::<u64>()
-                .unwrap();
+                .expect("right half should be valid u64");
             self.value = left;
             return Some(Stone::from(right));
         }

@@ -33,8 +33,7 @@ impl Garden {
     pub fn get_fence_price(&mut self, scale: PriceScale) -> u64 {
         let mut result = 0;
 
-        while !self.unvisited.is_empty() {
-            let start = self.unvisited.pop_first().unwrap();
+        while let Some(start) = self.unvisited.pop_first() {
             result += self.compute_price(start, scale);
         }
         result
@@ -47,8 +46,7 @@ impl Garden {
 
         let mut visited = HashSet::from([start]);
         let mut plots: VecDeque<Location> = VecDeque::from([start]);
-        while !plots.is_empty() {
-            let location = plots.pop_front().unwrap();
+        while let Some(location) = plots.pop_front() {
             area += 1;
             perimeter += 4 - self.add_neighbors(location, &mut plots, &mut visited);
             if scale == PriceScale::Corner {
@@ -113,8 +111,12 @@ impl Garden {
                 if first_plot != plot && second_plot != plot {
                     num_corners += 1;
                 } else if first_plot == plot && second_plot == plot {
-                    let diagonal_location =
-                        grid::get_location(&self.map, first_location, second_direction).unwrap();
+                    let diagonal_location = grid::get_location(
+                        &self.map,
+                        first_location,
+                        second_direction,
+                    )
+                    .expect("diagonal should exist when both adjacent cells exist");
                     if grid::at(&self.map, diagonal_location) != plot {
                         num_corners += 1;
                     }

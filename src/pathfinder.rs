@@ -53,7 +53,9 @@ impl Pathfinder<'_> {
                     let tx_clone = tx.clone();
                     s.spawn(move || {
                         let pathtype = subpathfinder.populate_path();
-                        tx_clone.send(pathtype).unwrap();
+                        tx_clone
+                            .send(pathtype)
+                            .expect("channel should be open for sending");
                     });
                 }
 
@@ -63,12 +65,10 @@ impl Pathfinder<'_> {
                     self.location = potential_next;
                 }
 
-                if self.path.contains_key(&self.location)
-                    && self
-                        .path
-                        .get(&self.location)
-                        .unwrap()
-                        .contains(&self.direction)
+                if self
+                    .path
+                    .get(&self.location)
+                    .map_or(false, |dirs| dirs.contains(&self.direction))
                 {
                     panic!("Found unexpected looping path");
                 }
@@ -91,12 +91,10 @@ impl Pathfinder<'_> {
                 self.location = potential_next;
             }
 
-            if self.path.contains_key(&self.location)
-                && self
-                    .path
-                    .get(&self.location)
-                    .unwrap()
-                    .contains(&self.direction)
+            if self
+                .path
+                .get(&self.location)
+                .map_or(false, |dirs| dirs.contains(&self.direction))
             {
                 return PathType::Loop;
             }

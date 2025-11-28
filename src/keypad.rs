@@ -72,7 +72,9 @@ impl Keypad {
     }
 
     fn get_numeric_part(&self, code: &str) -> u64 {
-        code[..code.len() - 1].parse::<u64>().unwrap()
+        code[..code.len() - 1]
+            .parse::<u64>()
+            .expect("code prefix should be numeric")
     }
 
     fn directional_to_directional(
@@ -88,10 +90,16 @@ impl Keypad {
         }
 
         let mut result = String::new();
-        let mut current_pos = *self.directional_map.get(&'A').unwrap();
+        let mut current_pos = *self
+            .directional_map
+            .get(&'A')
+            .expect("'A' should be in directional map");
 
         for ch in code.chars() {
-            let target_pos = *self.directional_map.get(&ch).unwrap();
+            let target_pos = *self
+                .directional_map
+                .get(&ch)
+                .expect("character should be in directional map");
             result.push_str(&self.get_directional_moves(current_pos, target_pos));
             result.push('A');
             current_pos = target_pos;
@@ -193,10 +201,16 @@ impl Keypad {
 
     fn numpad_to_directional(&self, code: &str) -> String {
         let mut result = String::new();
-        let mut current_pos = *self.numeric_map.get(&'A').unwrap();
+        let mut current_pos = *self
+            .numeric_map
+            .get(&'A')
+            .expect("'A' should be in numeric map");
 
         for ch in code.chars() {
-            let target_pos = *self.numeric_map.get(&ch).unwrap();
+            let target_pos = *self
+                .numeric_map
+                .get(&ch)
+                .expect("character should be in numeric map");
             result.push_str(&self.get_numpad_moves(current_pos, target_pos));
             result.push('A');
             current_pos = target_pos;

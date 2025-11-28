@@ -27,7 +27,9 @@ impl From<&str> for Disk {
         let mut next_location = DiskLocation::File(next_file_id);
 
         for encode in encoding.chars() {
-            let length = encode.to_digit(10).unwrap() as usize;
+            let length = encode
+                .to_digit(10)
+                .expect("encoding should contain only digits") as usize;
             let start_index = disk_locations.len();
             let block = MemoryBlock {
                 start_index,
@@ -79,7 +81,7 @@ impl Disk {
     pub fn compute_block_checksum(&mut self) -> u64 {
         while !self.file_blocks.is_empty() {
             let file_id = (self.file_blocks.len() - 1) as u64;
-            let file_block = self.file_blocks.pop().unwrap();
+            let file_block = self.file_blocks.pop().expect("checked non-empty");
 
             match self.blank_blocks.iter_mut().position(|b| {
                 b.length >= file_block.length && b.start_index < file_block.start_index
