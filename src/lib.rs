@@ -1,5 +1,6 @@
 pub mod antennas;
 pub mod assembly;
+pub mod bfs;
 pub mod bytedodge;
 pub mod cheat;
 pub mod claw;
@@ -16,6 +17,7 @@ pub mod logic;
 pub mod maze;
 pub mod order_rules;
 pub mod pathfinder;
+pub mod pathfinding;
 pub mod pattern_metrics;
 pub mod secret;
 pub mod security;

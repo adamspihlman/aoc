@@ -130,3 +130,50 @@ pub fn print_map_counts(counts: &HashMap<char, i32>) {
     sorted.sort_by_key(|&(k, _)| k);
     println!("{:?}", sorted);
 }
+
+/// Get all valid neighboring locations (up, down, left, right).
+pub fn neighbors<T>(map: &[Vec<T>], location: Location) -> Vec<Location> {
+    DIRECTIONS
+        .iter()
+        .filter_map(|&d| get_location(map, location, d))
+        .collect()
+}
+
+/// Get all neighboring locations where the value satisfies the predicate.
+pub fn neighbors_where<T: Copy>(
+    map: &[Vec<T>],
+    location: Location,
+    predicate: impl Fn(T) -> bool,
+) -> Vec<Location> {
+    DIRECTIONS
+        .iter()
+        .filter_map(|&d| {
+            get_location(map, location, d).filter(|&loc| predicate(at(map, loc)))
+        })
+        .collect()
+}
+
+/// Find all locations in the grid where the value satisfies the predicate.
+pub fn find_all<T: Copy>(
+    map: &[Vec<T>],
+    predicate: impl Fn(T) -> bool,
+) -> Vec<Location> {
+    let mut result = Vec::new();
+    for (row, row_val) in map.iter().enumerate() {
+        for (col, &val) in row_val.iter().enumerate() {
+            if predicate(val) {
+                result.push(Location { row, col });
+            }
+        }
+    }
+    result
+}
+
+/// Get dimensions (height, width) of the grid.
+pub fn dimensions<T>(map: &[Vec<T>]) -> (usize, usize) {
+    if map.is_empty() {
+        (0, 0)
+    } else {
+        (map.len(), map[0].len())
+    }
+}
